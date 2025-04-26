@@ -18,6 +18,7 @@ class Menu(models.Model):
         return f"{self.nombre} - {self.precio} Gs"
 
 class Cliente(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     nombre_apellido = models.CharField(max_length=100)
     cedula = models.CharField(max_length=20, unique=True)
     correo = models.EmailField(unique=True)
@@ -27,12 +28,13 @@ class Cliente(models.Model):
         return f"{self.nombre_apellido} ({self.cedula})"
 
 class Mesa(models.Model):
+    numero = models.PositiveBigIntegerField(unique=True, null=True, blank=True)
+    capacidad = models.PositiveIntegerField()
     ESTADO_CHOICES = [
         ('disponible', 'Disponible'),
         ('reservada', 'Reservada'),
         ('ocupada', 'Ocupada'),
     ]
-    capacidad = models.PositiveIntegerField()
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='disponible')
 
     def __str__(self):

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Menú del Restaurante</title>
+</head>
+<body>
+    <h1>Menú Disponible</h1>
+    <ul>
+        {% for menu in menus %}
+            <li>
+                <strong>{{ menu.nombre }}</strong> - {{ menu.categoria }} - ${{ menu.precio }}
+                {% if menu.stock > 0 %}
+                    <span style="color:green;">Disponible</span>
+                {% else %}
+                    <span style="color:red;">Agotado</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
