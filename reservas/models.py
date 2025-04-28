@@ -18,7 +18,7 @@ class Menu(models.Model):
         return f"{self.nombre} - {self.precio} Gs"
 
 class Cliente(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+   # user = models.Field(User, on_delete=models.CASCADE)
     nombre_apellido = models.CharField(max_length=100)
     cedula = models.CharField(max_length=20, unique=True)
     correo = models.EmailField(unique=True)

@@ -1,0 +1,20 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="form-container bg-light p-4 rounded shadow-sm">
+        <h1 class="text-center">Mis Datos</h1>
+        <div class="mb-3">
+            <ul>
+                {% for dato in mis_datos %}
+                <li>{{dato.nombre_apellido}}</li>
+                <li>{{dato.cedula}}</li>
+                <li>{{dato.correo}}</li>
+                <li>{{dato.telefono}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
