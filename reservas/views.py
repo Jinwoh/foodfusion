@@ -25,8 +25,8 @@ def registro(request):
         if User.objects.filter(username=email).exists():
             return render(request, 'login_logout.html', {'error': 'Ya existe un usuario con ese correo'})
 
-        if Cliente.objects.filter(correo=email).exists() or Cliente.objects.filter(cedula=cedula).exists():
-            return render(request, 'login_logout.html', {'error': 'Cliente ya registrado con ese correo o cédula'})
+        elif Cliente.objects.filter(correo=email).exists() or Cliente.objects.filter(cedula=cedula).exists():
+            return render(request, 'signup.html', {'error': 'Cliente ya registrado con ese correo o cédula'})
 
         try:
             user = User.objects.create_user(username=email, password=password, email=email)
@@ -46,9 +46,9 @@ def registro(request):
             return redirect('home')
 
         except IntegrityError:
-            return render(request, 'login_logout.html', {'error': 'Error al registrar. Intente nuevamente.'})
+            return render(request, 'signupt.html', {'error': 'Error al registrar. Intente nuevamente.'})
 
-    return render(request, 'login_logout.html')
+    return render(request, 'signup.html')
 
 # Vista para manejar el inicio de sesión
 def login(request):
@@ -68,46 +68,5 @@ def login(request):
 def menus(request):
     return render(request, 'menus.html')
 
-'''
-def registro(request):
-    if request.method == 'POST':
-        nombre_apellido = request.POST['nombre_apellido']
-        cedula = request.POST['cedula']
-        correo = request.POST['correo']
-        telefono = request.POST['telefono']
 
-        # Validación básica
-        if Cliente.objects.filter(correo=correo).exists() or Cliente.objects.filter(cedula=cedula).exists():
-            return render(request, 'reservas/login_logout.html', {'error': 'Cliente ya registrado con ese correo o cédula'})
-
-        # Crear cliente y guardar en sesión
-        cliente = Cliente.objects.create(
-            nombre_apellido=nombre_apellido,
-            cedula=cedula,
-            correo=correo,
-            telefono=telefono
-        )
-        request.session['cliente_id'] = cliente.id  # Guardar ID en sesión
-        return redirect('menus')
-
-    return render(request, 'reservas/login_logout.html')
-
-def login(request):
-    if request.method == 'POST':
-        correo = request.POST['correo']
-        cedula = request.POST['cedula']
-
-        try:
-            cliente = Cliente.objects.get(correo=correo, cedula=cedula)
-            request.session['cliente_id'] = cliente.id
-            return redirect('menus')
-        except Cliente.DoesNotExist:
-            return render(request, 'reservas/login_logout.html', {'error': 'Credenciales incorrectas'})
-
-    return render(request, 'reservas/login_logout.html')
-
-def logout_usuario(request):
-    request.session.flush()
-    return redirect('home')
-'''
 

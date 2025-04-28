@@ -1,5 +1,5 @@
-from django.db import models
-from django.contrib.auth.models import User
+from django.db import models # type: ignore
+from django.contrib.auth.models import User  # type: ignore
 
 # Create your models here.
 class CategoriaMenu(models.Model):
