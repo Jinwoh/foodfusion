@@ -3,12 +3,14 @@
 {% block content %}
 <main class="container">
     <div class="row">
-        <div class="col-md-4 offset-md-4 mt-5">
-            {{error}}
+        <div class="col-md-4 offset-md-4 mt-5 card">
+            <h1 class="text-center">Crear Cuenta</h1>
+            
             <form action="{% url 'registro' %}" method="POST" class="card card-body">
-                <h1 class="text-center">Crear Cuenta</h1>
+                
                 {{error}}
                 {% csrf_token %}
+                
                 <div class="mb-3">
                     <label for="nombre_apellido">Nombre y Apellido:</label>
                     <input type="text" name="nombre_apellido" id="nombre_apellido" class="form-control">

@@ -1,17 +1,24 @@
 {% extends 'home.html' %}
 
 {% block content %}
-            <ul>
-                {% for menu in menus %}
-                    <li>
-                        <strong>{{ menu.nombre }}</strong> - {{ menu.categoria }} - ${{ menu.precio }}
-                        {% if menu.stock > 0 %}
-                            <span style="color:green;">Disponible</span>
-                        {% else %}
-                            <span style="color:red;">Agotado</span>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="form-container bg-light p-4 rounded shadow-sm">
+            <h1 class="text-center">Lista de Menus</h1>
+            <div class="mb-3">
+                <ul>
+                    {% for menu in menus %}
+                        <li>
+                            <strong>{{ menu.nombre }}</strong> - {{ menu.categoria }} - ${{ menu.precio }}
+                            {% if menu.stock > 0 %}
+                                <span style="color:green;">Disponible</span>
+                            {% else %}
+                                <span style="color:red;">Agotado</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+</div>
 
 {% endblock %}

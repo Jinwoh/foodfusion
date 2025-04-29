@@ -1,0 +1,14 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">Error al reservar</h4>
+        <p>{{ error }}</p>
+        <hr>
+        <a href="{% url 'mesas_disponibles' %}" class="btn btn-secondary">Volver a disponibilidad</a>
+    </div>
+</div>
+{% endblock %}
+
+

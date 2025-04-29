@@ -7,10 +7,10 @@
         <div class="mb-3">
             <ul>
                 {% for dato in mis_datos %}
-                <li>{{dato.nombre_apellido}}</li>
-                <li>{{dato.cedula}}</li>
-                <li>{{dato.correo}}</li>
-                <li>{{dato.telefono}}</li>
+                <li>Nombre y Apellido: {{dato.nombre_apellido}}</li>
+                <li>Nro de Cédula: {{dato.cedula}}</li>
+                <li>Correo eléctronico: {{dato.correo}}</li>
+                <li>Nro de Telefono: {{dato.telefono}}</li>
                 {% endfor %}
             </ul>
         </div>

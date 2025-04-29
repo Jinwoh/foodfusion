@@ -18,12 +18,13 @@ class Menu(models.Model):
         return f"{self.nombre} - {self.precio} Gs"
 
 class Cliente(models.Model):
-   # user = models.Field(User, on_delete=models.CASCADE)
+    #user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     nombre_apellido = models.CharField(max_length=100)
     cedula = models.CharField(max_length=20, unique=True)
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20)
-
+    # Esto es un comentario cualquiera.
     def __str__(self):
         return f"{self.nombre_apellido} ({self.cedula})"
 
