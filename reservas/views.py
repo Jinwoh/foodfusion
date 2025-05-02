@@ -4,11 +4,24 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, logout, login as auth_login
 from django.contrib.auth.decorators import login_required
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from .models import ClienteHistorial
 from django.utils import timezone
-# Create your views here.
 from .models import *
 import traceback
+from django.http import HttpResponseForbidden
+
+def cliente_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not Cliente.objects.filter(user=request.user).exists():
+            messages.error(request, 'Tu cuenta no está registrada como cliente.')
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+
+
 
 def home(request):
     return render(request, 'home.html')
@@ -47,6 +60,13 @@ def registro(request):
                 telefono=telefono
             )
             cliente.save()
+            ClienteHistorial.objects.create(
+            nombre_apellido=cliente.nombre_apellido,
+            cedula=cliente.cedula,
+            correo=cliente.correo,
+            telefono=cliente.telefono,
+            fecha_registro=datetime.now()
+)
 
             messages.success(request, "Cuenta creada con éxito.")
             auth_login(request, user)
@@ -58,6 +78,13 @@ def registro(request):
             return render(request, 'signup.html', {'error': 'Error al registrar. Intente nuevamente.'})
 
     return render(request, 'signup.html')
+
+
+# Historial de clientes en cuanto fecha de creación y eliminación de una cuenta.
+@login_required
+def historial_clientes(request):
+    historial = ClienteHistorial.objects.all().order_by('-fecha_registro')
+    return render(request, 'historial_clientes.html', {'historial': historial})
 
 
 # Vista para manejar el inicio de sesión
@@ -74,6 +101,74 @@ def login(request):
             return render(request, 'login.html', {'error': 'Usuario o Contraseña incorrecta!'}) 
     return render(request, 'login.html')
 
+# Función para editar datos.
+
+@login_required
+@cliente_required
+def editar_datos(request):
+    cliente = Cliente.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        cliente.nombre_apellido = request.POST.get('nombre_apellido')
+        cliente.cedula = request.POST.get('cedula')
+        cliente.correo = request.POST.get('correo')
+        cliente.telefono = request.POST.get('telefono')
+        cliente.save()
+        return redirect('mis_datos')
+
+    return render(request, 'editar_datos.html', {'cliente': cliente})
+
+
+# Función para eliminar la cuenta.
+@login_required
+@cliente_required
+def eliminar_cuenta(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = request.user
+
+        # Verifica la contraseña ingresada
+        if not user.check_password(password):
+            return render(request, 'mis_datos.html', {'error': 'Contraseña incorrecta.'})
+
+        try:
+            # Obtener cliente
+            cliente = Cliente.objects.get(user=user)
+
+            # Actualizar historial antes de eliminar
+            historial = ClienteHistorial.objects.filter(correo=cliente.correo).first()
+            if historial:
+                historial.fecha_eliminacion = timezone.now()
+                historial.save()
+            
+            ClienteHistorial.objects.create(
+            nombre_apellido=cliente.nombre_apellido,
+            cedula=cliente.cedula,
+            correo=cliente.correo,
+            telefono=cliente.telefono,
+            echa_registro=timezone.now(),
+            fecha_eliminacion=timezone.now()
+            )
+
+            # Eliminar cliente y usuario
+            cliente.delete()
+            user.delete()
+
+            # Cerrar sesión
+            logout(request)
+
+            # Redirigir a la página de inicio
+            return redirect('home')
+
+        except Cliente.DoesNotExist:
+            messages.error(request, 'No se encontró el cliente asociado a esta cuenta.')
+            return redirect('mis_datos')
+
+    return render(request, 'mis_datos.html')
+
+
+
+
 def menus(request):
     menus = Menu.objects.all()
     return render(request, 'menus.html', {'menus': menus})
@@ -83,10 +178,37 @@ def signout(request):  # <-- Usamos un nombre diferente
     logout(request)    # <-- Esta vez sí llama a la función real de Django
     return redirect('home')
 
+
+
 @login_required
+@cliente_required
 def mis_datos(request):
-    datos = Cliente.objects.filter(user=request.user)
-    return render(request, 'mis_datos.html', {'mis_datos': datos})
+    cliente = Cliente.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        if 'editar' in request.POST:
+            cliente.nombre_apellido = request.POST.get('nombre_apellido')
+            cliente.cedula = request.POST.get('cedula')
+            cliente.correo = request.POST.get('correo')
+            cliente.telefono = request.POST.get('telefono')
+            cliente.save()
+            return redirect('mis_datos')
+
+        elif 'eliminar' in request.POST:
+            password = request.POST.get('password')
+            if not request.user.check_password(password):
+                return render(request, 'mis_datos.html', {'mis_datos': [cliente], 'error': 'Contraseña incorrecta.'})
+            
+            # Usar timezone.now() correctamente
+            ClienteHistorial.objects.filter(correo=cliente.correo).update(fecha_eliminacion=timezone.now())
+            cliente.delete()
+            request.user.delete()
+            logout(request)
+            return redirect('home')
+
+    return render(request, 'mis_datos.html', {'mis_datos': [cliente]})
+
+
 
 
 
@@ -123,6 +245,7 @@ def mesas_disponibles(request):
         return render(request, 'mesas_disponibles.html', {'error': 'Formato de fecha u hora inválido'})
     
 @login_required
+@cliente_required
 def reservar_mesa(request, mesa_id):
     if request.method == 'POST':
         fecha_str = request.POST.get('fecha')

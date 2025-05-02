@@ -1,0 +1,36 @@
+{% extends 'home.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Historial de Clientes</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Fecha de Registro</th>
+                <th>Fecha de Eliminación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in historial %}
+            <tr>
+                <td>{{ cliente.nombre_apellido }}</td>
+                <td>{{ cliente.cedula }}</td>
+                <td>{{ cliente.correo }}</td>
+                <td>{{ cliente.telefono }}</td>
+                <td>{{ cliente.fecha_registro|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {% if cliente.fecha_eliminacion %}
+                        {{ cliente.fecha_eliminacion|date:"Y-m-d H:i" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

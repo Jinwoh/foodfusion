@@ -27,6 +27,21 @@ class Cliente(models.Model):
     # Esto es un comentario cualquiera.
     def __str__(self):
         return f"{self.nombre_apellido} ({self.cedula})"
+    
+# Historial de Clientes
+class ClienteHistorial(models.Model):
+    nombre_apellido = models.CharField(max_length=100)
+    cedula = models.CharField(max_length=20)
+    correo = models.EmailField()
+    telefono = models.CharField(max_length=20)
+
+    fecha_registro = models.DateTimeField()
+    fecha_eliminacion = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.nombre_apellido} ({self.correo})"
+
+
 
 class Mesa(models.Model):
     numero = models.PositiveBigIntegerField(unique=True, null=True, blank=True)

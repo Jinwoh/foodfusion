@@ -2,19 +2,94 @@
 
 {% block content %}
 <div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="form-container bg-light p-4 rounded shadow-sm">
-        <h1 class="text-center">Mis Datos</h1>
-        <div class="mb-3">
-            <ul>
-                {% for dato in mis_datos %}
-                <li>Nombre y Apellido: {{dato.nombre_apellido}}</li>
-                <li>Nro de Cédula: {{dato.cedula}}</li>
-                <li>Correo eléctronico: {{dato.correo}}</li>
-                <li>Nro de Telefono: {{dato.telefono}}</li>
-                {% endfor %}
-            </ul>
+    <div class="form-container bg-light p-4 rounded shadow-sm w-100" style="max-width: 600px;">
+        <h1 class="text-center mb-4">Mis Datos</h1>
+        <ul class="list-group mb-4">
+            {% for dato in mis_datos %}
+            <li class="list-group-item"><strong>Nombre y Apellido:</strong> {{ dato.nombre_apellido }}</li>
+            <li class="list-group-item"><strong>Nro de Cédula:</strong> {{ dato.cedula }}</li>
+            <li class="list-group-item"><strong>Correo electrónico:</strong> {{ dato.correo }}</li>
+            <li class="list-group-item"><strong>Nro de Teléfono:</strong> {{ dato.telefono }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="text-center">
+            <!-- Botón para abrir modal de edición -->
+            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editarModal">Editar</button>
+
+            <!-- Botón para abrir modal de eliminación -->
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal">Eliminar cuenta</button>
         </div>
     </div>
 </div>
 
+<!-- Modal de Edición -->
+<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editarModalLabel">Editar Datos</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          {% for dato in mis_datos %}
+          <div class="mb-3">
+              <label for="nombre_apellido" class="form-label">Nombre y Apellido</label>
+              <input type="text" class="form-control" name="nombre_apellido" value="{{ dato.nombre_apellido }}" required>
+          </div>
+          <div class="mb-3">
+              <label for="cedula" class="form-label">Cédula</label>
+              <input type="text" class="form-control" name="cedula" value="{{ dato.cedula }}" required>
+          </div>
+          <div class="mb-3">
+              <label for="correo" class="form-label">Correo</label>
+              <input type="email" class="form-control" name="correo" value="{{ dato.correo }}" required>
+          </div>
+          <div class="mb-3">
+              <label for="telefono" class="form-label">Teléfono</label>
+              <input type="text" class="form-control" name="telefono" value="{{ dato.telefono }}" required>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" name="editar" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Confirmar Eliminación -->
+<!-- Modal para Confirmar Eliminación -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.</p>
+            <div class="mb-3">
+              <label for="password" class="form-label">Confirma tu contraseña:</label>
+              <input type="password" name="password" class="form-control" required>
+            </div>
+            {% if error %}
+                <div class="alert alert-danger" id="error-message">{{ error }}</div>
+            {% endif %}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelButton">Cancelar</button>
+            <button type="submit" name="eliminar" class="btn btn-danger">Eliminar definitivamente</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
 {% endblock %}
