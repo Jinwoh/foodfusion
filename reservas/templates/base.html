@@ -18,8 +18,7 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-              <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Inicio</a>
-              <a class="nav-link" href="{% url 'menus' %}">Menus</a>
+              <a class="nav-link active" aria-current="page" href="{% url 'inicio' %}">Inicio</a>
               {% if user.is_authenticated %}
               <a class="nav-link" href="{% url 'mis_reservas' %}">Mis Reservas</a>
               <a class="nav-link" href="{% url 'mesas_disponibles' %}">Realizar una reserva</a>

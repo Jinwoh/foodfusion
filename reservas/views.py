@@ -9,17 +9,27 @@ from .models import *
 import traceback
 from datetime import datetime, timedelta, time
 
+
 def cliente_required(view_func):
     def wrapper(request, *args, **kwargs):
         if not Cliente.objects.filter(user=request.user).exists():
-            messages.error(request, 'Tu cuenta no está registrada como cliente.')
-            return redirect('home')
+            logout(request)  # o redirige al login
+            return redirect('inicio')
         return view_func(request, *args, **kwargs)
     return wrapper
 
 
-def home(request):
-    return render(request, 'home.html')
+'''def incio(request):
+    if request.user.is_authenticated and not Cliente.objects.filter(user=request.user).exists():
+        logout(request)
+        return redirect('inicio')
+    return render(request, 'inicio.html')
+'''
+
+def inicio(request):
+    menus = Menu.objects.all()
+    return render(request, 'inicio.html', {'menus': menus})
+
 
 def registro(request):
     if request.method == 'POST':
@@ -131,15 +141,26 @@ def eliminar_cuenta(request):
 
     return render(request, 'mis_datos.html')
 
-
 def menus(request):
-    menus = Menu.objects.all()
-    return render(request, 'menus.html', {'menus': menus})
+    categoria_id = request.GET.get('categoria')
+
+    if categoria_id:
+        menus = Menu.objects.filter(categoria_id=categoria_id, disponible=True)
+    else:
+        menus = Menu.objects.filter(disponible=True)
+
+    categorias = CategoriaMenu.objects.all()
+
+    return render(request, 'menus.html', {
+        'menus': menus,
+        'categorias': categorias,
+        'categoria_actual': int(categoria_id) if categoria_id else None
+    })
 
 @login_required
 def signout(request):  # <-- Usamos un nombre diferente
     logout(request)    # <-- Esta vez sí llama a la función real de Django
-    return redirect('home')
+    return redirect('inicio')
 
 
 @login_required

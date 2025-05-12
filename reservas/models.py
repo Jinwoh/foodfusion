@@ -12,9 +12,11 @@ class CategoriaMenu(models.Model):
 
 class Menu(models.Model):
     nombre = models.CharField(max_length=100)
-    categoria = models.ForeignKey(CategoriaMenu, on_delete=models.CASCADE)
+    categoria = models.ForeignKey('CategoriaMenu', on_delete=models.CASCADE)
     precio = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.PositiveIntegerField()
+    disponible = models.BooleanField(default=True)
+    img_url = models.ImageField(upload_to='menus/', null=True, blank=True)  # 👈 nuevo campo
 
     def __str__(self):
         return f"{self.nombre} - {self.precio} Gs"
