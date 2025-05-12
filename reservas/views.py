@@ -1,15 +1,13 @@
 from django.db import IntegrityError
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, logout, login as auth_login
 from django.contrib.auth.decorators import login_required
-from datetime import datetime, timedelta, timezone
-from .models import ClienteHistorial
-from django.utils import timezone
+from datetime import datetime, timedelta
 from .models import *
 import traceback
-from django.http import HttpResponseForbidden
+from datetime import datetime, timedelta, time
 
 def cliente_required(view_func):
     def wrapper(request, *args, **kwargs):
@@ -60,13 +58,6 @@ def registro(request):
                 telefono=telefono
             )
             cliente.save()
-            ClienteHistorial.objects.create(
-            nombre_apellido=cliente.nombre_apellido,
-            cedula=cliente.cedula,
-            correo=cliente.correo,
-            telefono=cliente.telefono,
-            fecha_registro=datetime.now()
-)
 
             messages.success(request, "Cuenta creada con éxito.")
             auth_login(request, user)
@@ -79,12 +70,6 @@ def registro(request):
 
     return render(request, 'signup.html')
 
-
-# Historial de clientes en cuanto fecha de creación y eliminación de una cuenta.
-@login_required
-def historial_clientes(request):
-    historial = ClienteHistorial.objects.all().order_by('-fecha_registro')
-    return render(request, 'historial_clientes.html', {'historial': historial})
 
 
 # Vista para manejar el inicio de sesión
@@ -134,22 +119,6 @@ def eliminar_cuenta(request):
         try:
             # Obtener cliente
             cliente = Cliente.objects.get(user=user)
-
-            # Actualizar historial antes de eliminar
-            historial = ClienteHistorial.objects.filter(correo=cliente.correo).first()
-            if historial:
-                historial.fecha_eliminacion = timezone.now()
-                historial.save()
-            
-            ClienteHistorial.objects.create(
-            nombre_apellido=cliente.nombre_apellido,
-            cedula=cliente.cedula,
-            correo=cliente.correo,
-            telefono=cliente.telefono,
-            echa_registro=timezone.now(),
-            fecha_eliminacion=timezone.now()
-            )
-
             # Eliminar cliente y usuario
             cliente.delete()
             user.delete()
@@ -200,11 +169,7 @@ def mis_datos(request):
                 return render(request, 'mis_datos.html', {'mis_datos': [cliente], 'error': 'Contraseña incorrecta.'})
             
             # Usar timezone.now() correctamente
-            ClienteHistorial.objects.filter(correo=cliente.correo).update(fecha_eliminacion=timezone.now())
-            cliente.delete()
-            request.user.delete()
-            logout(request)
-            return redirect('home')
+
 
     return render(request, 'mis_datos.html', {'mis_datos': [cliente]})
 
@@ -216,34 +181,56 @@ def mis_datos(request):
 
 @login_required
 def mesas_disponibles(request):
-    fecha_str = request.GET.get('fecha')  # formato: YYYY-MM-DD
-    hora_str = request.GET.get('hora')    # formato: HH:MM
-    duracion_horas = int(request.GET.get('duracion', 2))  # duración por defecto: 2h
+    fecha_str = request.GET.get('fecha')
+    hora_str = request.GET.get('hora')
+    duracion_horas = int(request.GET.get('duracion', 2))
 
     if not fecha_str or not hora_str:
-        return render(request, 'mesas_disponibles.html', {'error': 'Debes ingresar fecha y hora.'})
+        return render(request, 'mesas_disponibles.html', {
+            'error': 'Debes ingresar la fecha y la hora para buscar mesas.'
+        })
 
     try:
+        # Combinar fecha y hora
         fecha_hora_inicio = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
         fecha_hora_fin = fecha_hora_inicio + timedelta(hours=duracion_horas)
 
-        # Buscar mesas que NO estén reservadas en el rango solicitado
-        reservas_superpuestas = Reserva.objects.filter(
-            fecha_reserva__range=(fecha_hora_inicio, fecha_hora_fin)
+        # Validación de horario permitido
+        hora_min = time(8, 0)
+        hora_max = time(22, 0)
+
+        if not (hora_min <= fecha_hora_inicio.time() < hora_max):
+            return render(request, 'mesas_disponibles.html', {
+                'error': 'El horario de reserva debe ser entre las 08:00 y las 22:00.'
+            })
+
+        if fecha_hora_fin.time() > hora_max:
+            return render(request, 'mesas_disponibles.html', {
+                'error': 'La duración excede el horario máximo permitido (22:00).'
+            })
+
+        # Buscar IDs de mesas que estén ocupadas en el rango
+        reservas_conflicto = Reserva.objects.filter(
+            fecha_inicio__lt=fecha_hora_fin,
+            fecha_fin__gt=fecha_hora_inicio
         ).values_list('mesa_id', flat=True)
 
-        mesas = Mesa.objects.exclude(id__in=reservas_superpuestas)
+        # Excluir esas mesas
+        mesas_disponibles = Mesa.objects.exclude(id__in=reservas_conflicto)
 
         return render(request, 'mesas_disponibles.html', {
-            'mesas': mesas,
+            'mesas': mesas_disponibles,
             'fecha': fecha_str,
             'hora': hora_str,
             'duracion': duracion_horas,
         })
 
     except ValueError:
-        return render(request, 'mesas_disponibles.html', {'error': 'Formato de fecha u hora inválido'})
+        return render(request, 'mesas_disponibles.html', {
+            'error': 'Formato de fecha u hora inválido.'
+        })
     
+
 @login_required
 @cliente_required
 def reservar_mesa(request, mesa_id):
@@ -252,27 +239,44 @@ def reservar_mesa(request, mesa_id):
         hora_str = request.POST.get('hora')
         duracion = int(request.POST.get('duracion', 2))
 
-        fecha_hora_inicio = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
-        fecha_hora_fin = fecha_hora_inicio + timedelta(hours=duracion)
-
-        # Verifica si la mesa está libre en ese rango
-        reservas_superpuestas = Reserva.objects.filter(
-            mesa_id=mesa_id,
-            fecha_reserva__range=(fecha_hora_inicio, fecha_hora_fin)
-        )
-        if reservas_superpuestas.exists():
-            return render(request, 'reserva_error.html', {'error': 'La mesa ya está reservada en ese horario.'})
-
         try:
-            cliente = Cliente.objects.get(correo=request.user.email)
+            fecha_hora_inicio = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
+            fecha_hora_fin = fecha_hora_inicio + timedelta(hours=duracion)
 
-            reservar = Reserva.objects.create(
-                fecha_reserva=fecha_hora_inicio,
-                cliente=cliente,
-                mesa_id=mesa_id
+            # Verificar disponibilidad
+            reservas_conflicto = Reserva.objects.filter(
+                mesa_id=mesa_id,
+                fecha_inicio__lt=fecha_hora_fin,
+                fecha_fin__gt=fecha_hora_inicio
             )
-            return redirect('home')  # O a una página de confirmación
+            if reservas_conflicto.exists():
+                return render(request, 'reserva_error.html', {'error': 'La mesa ya está reservada en ese horario.'})
 
-        except Cliente.DoesNotExist:
-            return render(request, 'reserva_error.html', {'error': 'No se encontró el cliente.'})
+            cliente = get_object_or_404(Cliente, user=request.user)
+            mesa = get_object_or_404(Mesa, pk=mesa_id)
 
+            Reserva.objects.create(
+                fecha_inicio=fecha_hora_inicio,
+                fecha_fin=fecha_hora_fin,
+                cliente=cliente,
+                mesa=mesa
+            )
+
+            messages.success(request, 'Reserva realizada con éxito.')
+            return redirect('home')  # O redirigir a una página de confirmación
+
+        except Exception as e:
+            return render(request, 'reserva_error.html', {'error': 'Error al procesar la reserva.'})
+
+    return redirect('mesas_disponibles')
+
+
+@login_required
+def mis_reservas(request):
+    cliente = get_object_or_404(Cliente, user=request.user)
+
+    reservas = Reserva.objects.filter(cliente=cliente).order_by('-fecha_inicio')
+
+    return render(request, 'mis_reservas.html', {
+        'reservas': reservas
+    })

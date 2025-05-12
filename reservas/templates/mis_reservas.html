@@ -1,0 +1,30 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Mis Reservas</h2>
+
+    {% if reservas %}
+        <table class="table table-bordered mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th>Mesa</th>
+                    <th>Fecha de Inicio</th>
+                    <th>Fecha de Fin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reserva in reservas %}
+                <tr>
+                    <td>Mesa #{{ reserva.mesa.numero }}</td>
+                    <td>{{ reserva.fecha_inicio|date:"d/m/Y H:i" }}</td>
+                    <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">No tienes reservas registradas.</div>
+    {% endif %}
+</div>
+{% endblock %}

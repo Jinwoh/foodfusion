@@ -12,6 +12,5 @@ urlpatterns = [
     path('reservar/<int:mesa_id>/', views.reservar_mesa, name='reservar_mesa'),
     path('eliminar-cuenta/', views.eliminar_cuenta, name='eliminar_cuenta'),
     path('editar_datos/', views.editar_datos, name='editar_datos'),
-    path('historial_clientes/', views.historial_clientes, name='historial_clientes'),
-
+    path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
 ]
