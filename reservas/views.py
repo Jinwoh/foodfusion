@@ -151,7 +151,7 @@ def menus(request):
 
     categorias = CategoriaMenu.objects.all()
 
-    return render(request, 'menus.html', {
+    return render(request, 'inicio.html', {
         'menus': menus,
         'categorias': categorias,
         'categoria_actual': int(categoria_id) if categoria_id else None
