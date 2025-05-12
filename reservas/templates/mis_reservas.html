@@ -1,24 +1,32 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <div class="container mt-4">
-    <h2>Mis Reservas</h2>
+    <h2 class="mb-4">Mis Reservas</h2>
 
     {% if reservas %}
-        <table class="table table-bordered mt-3">
+        <table class="table table-bordered">
             <thead class="table-light">
                 <tr>
                     <th>Mesa</th>
-                    <th>Fecha de Inicio</th>
-                    <th>Fecha de Fin</th>
+                    <th>Fecha</th>
+                    <th>Horario</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for reserva in reservas %}
                 <tr>
                     <td>Mesa #{{ reserva.mesa.numero }}</td>
-                    <td>{{ reserva.fecha_inicio|date:"d/m/Y H:i" }}</td>
-                    <td>{{ reserva.fecha_fin|date:"d/m/Y H:i" }}</td>
+                    <td>{{ reserva.fecha_inicio|date:"d/m/Y" }}</td>
+                    <td>{{ reserva.fecha_inicio|time:"H:i" }} a {{ reserva.fecha_fin|time:"H:i" }}</td>
+                    <td>
+                        <form method="post" action="{% url 'cancelar_reserva' reserva.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas cancelar esta reserva?')">
+                                Cancelar
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

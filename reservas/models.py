@@ -49,8 +49,9 @@ class Mesa(models.Model):
 
 
 class Reserva(models.Model):
-    fecha_inicio = models.DateTimeField(default=timezone.now)
-    fecha_fin = models.DateTimeField(default=timezone.now)
+    fecha_inicio = models.DateTimeField()
+    fecha_fin = models.DateTimeField()
+
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
 
