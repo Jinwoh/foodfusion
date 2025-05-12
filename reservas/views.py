@@ -18,9 +18,6 @@ def cliente_required(view_func):
     return wrapper
 
 
-
-
-
 def home(request):
     return render(request, 'home.html')
 
@@ -69,7 +66,6 @@ def registro(request):
             return render(request, 'signup.html', {'error': 'Error al registrar. Intente nuevamente.'})
 
     return render(request, 'signup.html')
-
 
 
 # Vista para manejar el inicio de sesión
@@ -136,8 +132,6 @@ def eliminar_cuenta(request):
     return render(request, 'mis_datos.html')
 
 
-
-
 def menus(request):
     menus = Menu.objects.all()
     return render(request, 'menus.html', {'menus': menus})
@@ -146,7 +140,6 @@ def menus(request):
 def signout(request):  # <-- Usamos un nombre diferente
     logout(request)    # <-- Esta vez sí llama a la función real de Django
     return redirect('home')
-
 
 
 @login_required
@@ -174,11 +167,6 @@ def mis_datos(request):
     return render(request, 'mis_datos.html', {'mis_datos': [cliente]})
 
 
-
-
-
-
-
 @login_required
 def mesas_disponibles(request):
     fecha_str = request.GET.get('fecha')
@@ -192,7 +180,8 @@ def mesas_disponibles(request):
 
     try:
         # Combinar fecha y hora
-        fecha_hora_inicio = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
+        naive_inicio = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
+        fecha_hora_inicio = timezone.make_aware(naive_inicio)
         fecha_hora_fin = fecha_hora_inicio + timedelta(hours=duracion_horas)
 
         # Validación de horario permitido

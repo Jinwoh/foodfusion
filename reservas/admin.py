@@ -11,11 +11,19 @@ class MenuAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'categoria', 'precio', 'stock')
 
 
+class ReservaAdmin(admin.ModelAdmin):
+    list_display = ('cliente', 'mesa', 'fecha_inicio', 'fecha_fin')
+
+class ClienteAdmin(admin.ModelAdmin):
+    list_display = ('nombre_apellido', 'cedula', 'correo', 'telefono')
+
+
+
 admin.site.register(CategoriaMenu)
 admin.site.register(Menu,MenuAdmin)
-admin.site.register(Cliente)
+admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Mesa)
-admin.site.register(Reserva)
+admin.site.register(Reserva, ReservaAdmin)
 admin.site.register(Empleado)
 
 

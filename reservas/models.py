@@ -40,7 +40,7 @@ class Mesa(models.Model):
         ('reservada', 'Reservada'),
         ('ocupada', 'Ocupada'),
     ]
-    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='disponible')
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES)
 
     def __str__(self):
         return f"Mesa #{self.numero or self.id} - {self.estado}"
