@@ -68,7 +68,7 @@ def registro(request):
 
             messages.success(request, "Cuenta creada con éxito.")
             auth_login(request, user)
-            return redirect('home')
+            return redirect('inicio')
 
         except IntegrityError as e:
             print("IntegrityError:", e)
@@ -240,6 +240,15 @@ def mesas_disponibles(request):
             'error': 'Formato de fecha u hora inválido.'
         })
     
+@login_required
+def mis_reservas(request):
+    cliente = get_object_or_404(Cliente, user=request.user)
+
+    reservas = Reserva.objects.filter(cliente=cliente).order_by('-fecha_inicio')
+
+    return render(request, 'mis_reservas.html', {
+        'reservas': reservas
+    })
 
 @login_required
 @cliente_required
@@ -273,7 +282,7 @@ def reservar_mesa(request, mesa_id):
             )
 
             messages.success(request, 'Reserva realizada con éxito.')
-            return redirect('home')  # O redirigir a una página de confirmación
+            return redirect('inicio')  # O redirigir a una página de confirmación
 
         except Exception as e:
             return render(request, 'reserva_error.html', {'error': 'Error al procesar la reserva.'})
@@ -281,12 +290,3 @@ def reservar_mesa(request, mesa_id):
     return redirect('mesas_disponibles')
 
 
-@login_required
-def mis_reservas(request):
-    cliente = get_object_or_404(Cliente, user=request.user)
-
-    reservas = Reserva.objects.filter(cliente=cliente).order_by('-fecha_inicio')
-
-    return render(request, 'mis_reservas.html', {
-        'reservas': reservas
-    })
