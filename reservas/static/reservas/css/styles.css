@@ -7,7 +7,7 @@
     font-family: 'Montserrat', sans-serif;*/
 }
 body {
-    background-image: url('/static/reservas/img/restaurante.jpg');
+    background-image: url('../img/restaurante.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
