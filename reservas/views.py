@@ -12,6 +12,7 @@ import traceback
 # --- DECORATORS ---
 def cliente_required(view_func):
     def wrapper(request, *args, **kwargs):
+        print(">>> User:", request.user, "is_cliente?", Cliente.objects.filter(user=request.user).exists())
         if not request.user.is_authenticated or not Cliente.objects.filter(user=request.user).exists():
             return redirect('clientes:login')
         return view_func(request, *args, **kwargs)
