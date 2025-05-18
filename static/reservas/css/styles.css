@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+*{
+    /*margin: 0;
+    padding: 0;*/
+    /*box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;*/
+}
+body {
+    background-image: url('../img/restaurante.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.navbar {
+    position: fixed;
+    width: 100vw;
+    z-index: 1000;
+}
+
+
+
