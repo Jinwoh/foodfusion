@@ -1,8 +1,5 @@
 from django.urls import path
-
-from restaurante_reservas import settingsv1 # type: ignore
 from . import views
-from django.conf.urls.static import static
 urlpatterns = [
 
     path('', views.inicio, name='inicio'),
@@ -17,4 +14,4 @@ urlpatterns = [
     path('eliminar-cuenta/', views.eliminar_cuenta, name='eliminar_cuenta'),
     path('editar_datos/', views.editar_datos, name='editar_datos'),
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
-]+ static(settingsv1.MEDIA_URL, document_root=settingsv1.MEDIA_ROOT)
+]

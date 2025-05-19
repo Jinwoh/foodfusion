@@ -1,41 +1,46 @@
 {% extends 'base.html' %}
+{% load static %}
+
+
+
 
 {% block content %}
-<main class="container">
-    <div class="row">
-        <div class="col-md-4 offset-md-4 mt-5 card">
-            <h1 class="text-center">Crear Cuenta</h1>
-            
-            <form action="{% url 'registro' %}" method="POST" class="card card-body">
-                {% csrf_token %}
-                {{error}}
-             
-                
-                <div class="mb-3">
-                    <label for="nombre_apellido">Nombre y Apellido:</label>
-                    <input type="text" name="nombre_apellido" id="nombre_apellido" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label for="email">Correo electrónico:</label>
-                    <input type="email" name="email" id="email" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label for="cedula">Cédula:</label>
-                    <input type="text" name="cedula" id="cedula" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label for="telefono">Teléfono:</label>
-                    <input type="text" name="telefono" id="telefono" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label for="password1">Introduzca su contraseña:</label>
-                    <input type="password" name="password1" id="password1" class="form-control">
-                </div>
-                <button class="btn btn-primary">
-                    Crear cuenta
-                </button>
-            </form>
-        </div>
+<link rel="stylesheet" href="{% static 'css/signup.css' %}">
+<main>
+    <div class="signup-container">
+        <h1>Crear Cuenta</h1>
+        
+        <form action="{% url 'registro' %}" method="POST">
+            {% csrf_token %}
+            {{ error }}
+
+            <div class="mb-3">
+                <label for="nombre_apellido">Nombre y Apellido:</label>
+                <input type="text" name="nombre_apellido" id="nombre_apellido" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="email">Correo electrónico:</label>
+                <input type="email" name="email" id="email" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="cedula">Cédula:</label>
+                <input type="text" name="cedula" id="cedula" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="telefono">Teléfono:</label>
+                <input type="text" name="telefono" id="telefono" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="password1">Contraseña:</label>
+                <input type="password" name="password1" id="password1" class="form-control">
+            </div>
+
+            <button type="submit">Crear cuenta</button>
+        </form>
     </div>
 </main>
 {% endblock %}
