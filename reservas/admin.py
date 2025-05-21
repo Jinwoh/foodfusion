@@ -2,7 +2,30 @@ from django.contrib import admin
 from django.utils.html import format_html
 # Register your models here.
 from django.contrib import admin
-from .models import CategoriaMenu, Menu, Cliente, Mesa, Reserva, Empleado
+from django.contrib.auth.admin import UserAdmin
+from .models import *
+
+class EmpleadoAdmin(UserAdmin):
+    model = Empleado
+    list_display = ('correo', 'nombre_apellido', 'rol', 'is_staff', 'is_active')
+    list_filter = ('rol', 'is_staff')
+    fieldsets = (
+        (None, {'fields': ('correo', 'password')}),
+        ('Información personal', {'fields': ('nombre_apellido', 'cedula', 'celular', 'rol')}),
+        ('Permisos', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('correo', 'nombre_apellido', 'cedula', 'celular', 'rol', 'password1', 'password2', 'is_staff', 'is_active')}
+        ),
+    )
+    search_fields = ('correo',)
+    ordering = ('correo',)
+
+admin.site.register(Empleado, EmpleadoAdmin)
+admin.site.register(Rol)
+
 admin.site.site_header = "Panel de Administración"
 admin.site.index_title = "Panel"
 admin.site.site_title = "FoodFusion"
@@ -31,6 +54,6 @@ admin.site.register(Menu,MenuAdmin)
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Mesa)
 admin.site.register(Reserva, ReservaAdmin)
-admin.site.register(Empleado)
+
 
 

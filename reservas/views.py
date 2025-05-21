@@ -1,21 +1,78 @@
-from django.db import IntegrityError
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages 
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, logout, login as auth_login
+from django.contrib.auth import logout, login as auth_login
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from .models import Cliente, Menu, CategoriaMenu, Mesa, Reserva
 from datetime import datetime, timedelta, time
 from django.utils import timezone
-from .models import *
-import traceback
+from django.db import IntegrityError
+import hashlib
+
+# Autenticación manual para clientes (ya no usan User)
+def login_cliente(request):
+    if request.method == 'POST':
+        correo = request.POST.get('email')
+        password = request.POST.get('password')
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+        try:
+            cliente = Cliente.objects.get(correo=correo, password=hashed_password)
+            request.session['cliente_id'] = cliente.id
+            return redirect('inicio')
+        except Cliente.DoesNotExist:
+            return render(request, 'login.html', {'error': 'Correo o contraseña incorrectos'})
+
+    return render(request, 'login.html')
+
+def registro_cliente(request):
+    if request.method == 'POST':
+        nombre_apellido = request.POST.get('nombre_apellido')
+        cedula = request.POST.get('cedula')
+        correo = request.POST.get('email')
+        telefono = request.POST.get('telefono')
+        password = request.POST.get('password1')
+
+        if not all([nombre_apellido, cedula, correo, telefono, password]):
+            return render(request, 'signup.html', {'error': 'Todos los campos son obligatorios.'})
+
+        if Cliente.objects.filter(correo=correo).exists() or Cliente.objects.filter(cedula=cedula).exists():
+            return render(request, 'signup.html', {'error': 'Cliente ya registrado.'})
+
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+        try:
+            cliente = Cliente(
+                nombre_apellido=nombre_apellido,
+                cedula=cedula,
+                correo=correo,
+                telefono=telefono,
+                password=hashed_password
+            )
+            cliente.save()
+            request.session['cliente_id'] = cliente.id
+            return redirect('inicio')
+        except IntegrityError:
+            return render(request, 'signup.html', {'error': 'Error al registrar. Intente nuevamente.'})
+
+    return render(request, 'signup.html')
+
+# Cliente_required decorador
+from functools import wraps
 
 def cliente_required(view_func):
+    @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if not Cliente.objects.filter(user=request.user).exists():
-            logout(request)
-            return redirect('inicio')
+        if 'cliente_id' not in request.session:
+            return redirect('login')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+# Vista de cierre de sesión de cliente
+def signout_cliente(request):
+    request.session.flush()
+    return redirect('inicio')
+
+
 
 def inicio(request):
     categoria_id = request.GET.get('categoria')
@@ -36,57 +93,7 @@ def inicio(request):
         'categoria_actual': categoria_actual
     })
 
-def registro(request):
-    if request.method == 'POST':
-        nombre_apellido = request.POST.get('nombre_apellido')
-        cedula = request.POST.get('cedula')
-        email = request.POST.get('email')
-        telefono = request.POST.get('telefono')
-        password = request.POST.get('password1')
 
-        if not all([nombre_apellido, cedula, email, telefono, password]):
-            return render(request, 'signup.html', {'error': 'Todos los campos son obligatorios.'})
-
-        if User.objects.filter(username=email).exists():
-            return render(request, 'signup.html', {'error': 'Ya existe un usuario con ese correo.'})
-
-        if Cliente.objects.filter(correo=email).exists() or Cliente.objects.filter(cedula=cedula).exists():
-            return render(request, 'signup.html', {'error': 'Cliente ya registrado con ese correo o cédula.'})
-
-        try:
-            user = User.objects.create_user(username=email, email=email, password=password)
-            user.save()
-
-            cliente = Cliente(
-                user=user,
-                nombre_apellido=nombre_apellido,
-                cedula=cedula,
-                correo=email,
-                telefono=telefono
-            )
-            cliente.save()
-
-            messages.success(request, "Cuenta creada con éxito.")
-            auth_login(request, user)
-            return redirect('inicio')
-
-        except IntegrityError as e:
-            traceback.print_exc()
-            return render(request, 'signup.html', {'error': 'Error al registrar. Intente nuevamente.'})
-
-    return render(request, 'signup.html')
-
-def login(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            auth_login(request, user)
-            return redirect('inicio')
-        else:
-            return render(request, 'login.html', {'error': 'Usuario o Contraseña incorrecta!'})
     return render(request, 'login.html')
 
 @login_required
@@ -123,10 +130,6 @@ def eliminar_cuenta(request):
 
     return render(request, 'mis_datos.html')
 
-@login_required
-def signout(request):
-    logout(request)
-    return redirect('inicio')
 
 @login_required
 @cliente_required
