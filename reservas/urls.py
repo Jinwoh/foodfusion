@@ -4,9 +4,9 @@ urlpatterns = [
 
     path('', views.inicio, name='inicio'),
     path('menus/', views.menus, name='menus'),
-    path('signup/', views.registro_cliente, name='registro'),
-    path('login/', views.login_cliente, name='login'),
-    path('logout/', views.signout_cliente, name='logout'),
+    path('signup/', views.registro_cliente, name='registro_cliente'),
+    path('login/', views.login_cliente, name='login_cliente'),
+    path('logout/', views.signout_cliente, name='logout_cliente'),
     path('mis_datos/', views.mis_datos, name='mis_datos'),
     path('mesas/', views.mesas_disponibles, name='mesas_disponibles'),
     path('reservar/<int:mesa_id>/', views.reservar_mesa, name='reservar_mesa'),

@@ -57,6 +57,7 @@ def registro_cliente(request):
 
     return render(request, 'signup.html')
 
+
 # ----------------------------
 # Decorador cliente_required
 # ----------------------------
