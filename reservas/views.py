@@ -1,14 +1,15 @@
-from django.contrib.auth import logout, login as auth_login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from .models import Cliente, Menu, CategoriaMenu, Mesa, Reserva
 from datetime import datetime, timedelta, time
 from django.utils import timezone
 from django.db import IntegrityError
 import hashlib
+from functools import wraps
 
-# Autenticación manual para clientes (ya no usan User)
+# ----------------------------
+# Autenticación manual Cliente
+# ----------------------------
 def login_cliente(request):
     if request.method == 'POST':
         correo = request.POST.get('email')
@@ -56,9 +57,9 @@ def registro_cliente(request):
 
     return render(request, 'signup.html')
 
-# Cliente_required decorador
-from functools import wraps
-
+# ----------------------------
+# Decorador cliente_required
+# ----------------------------
 def cliente_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -67,13 +68,16 @@ def cliente_required(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
-# Vista de cierre de sesión de cliente
+# ----------------------------
+# Logout cliente
+# ----------------------------
 def signout_cliente(request):
     request.session.flush()
     return redirect('inicio')
 
-
-
+# ----------------------------
+# Vista inicio
+# ----------------------------
 def inicio(request):
     categoria_id = request.GET.get('categoria')
     menus = Menu.objects.filter(disponible=True)
@@ -93,13 +97,12 @@ def inicio(request):
         'categoria_actual': categoria_actual
     })
 
-
-    return render(request, 'login.html')
-
-@login_required
+# ----------------------------
+# Editar datos del cliente
+# ----------------------------
 @cliente_required
 def editar_datos(request):
-    cliente = Cliente.objects.get(user=request.user)
+    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
     if request.method == 'POST':
         cliente.nombre_apellido = request.POST.get('nombre_apellido')
         cliente.cedula = request.POST.get('cedula')
@@ -109,43 +112,35 @@ def editar_datos(request):
         return redirect('mis_datos')
     return render(request, 'editar_datos.html', {'cliente': cliente})
 
-@login_required
+# ----------------------------
+# Eliminar cuenta del cliente
+# ----------------------------
 @cliente_required
 def eliminar_cuenta(request):
+    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
     if request.method == 'POST':
         password = request.POST.get('password')
-        user = request.user
-        if not user.check_password(password):
+        hashed = hashlib.sha256(password.encode()).hexdigest()
+        if cliente.password != hashed:
             return render(request, 'mis_datos.html', {'error': 'Contraseña incorrecta.'})
 
-        try:
-            cliente = Cliente.objects.get(user=user)
-            cliente.delete()
-            user.delete()
-            logout(request)
-            return redirect('inicio')
-        except Cliente.DoesNotExist:
-            messages.error(request, 'No se encontró el cliente asociado a esta cuenta.')
-            return redirect('mis_datos')
+        cliente.delete()
+        request.session.flush()
+        return redirect('inicio')
 
     return render(request, 'mis_datos.html')
 
-
-@login_required
+# ----------------------------
+# Ver datos del cliente
+# ----------------------------
 @cliente_required
 def mis_datos(request):
-    cliente = Cliente.objects.get(user=request.user)
-    if request.method == 'POST':
-        if 'editar' in request.POST:
-            cliente.nombre_apellido = request.POST.get('nombre_apellido')
-            cliente.cedula = request.POST.get('cedula')
-            cliente.correo = request.POST.get('correo')
-            cliente.telefono = request.POST.get('telefono')
-            cliente.save()
-            return redirect('mis_datos')
+    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
     return render(request, 'mis_datos.html', {'mis_datos': [cliente]})
 
-@login_required
+# ----------------------------
+# Ver mesas disponibles
+# ----------------------------
 def mesas_disponibles(request):
     fecha_str = request.GET.get('fecha')
     hora_str = request.GET.get('hora')
@@ -184,7 +179,9 @@ def mesas_disponibles(request):
     except ValueError:
         return render(request, 'mesas_disponibles.html', {'error': 'Formato de fecha u hora inválido.'})
 
-@login_required
+# ----------------------------
+# Reservar mesa
+# ----------------------------
 @cliente_required
 def reservar_mesa(request, mesa_id):
     if request.method == 'POST':
@@ -205,7 +202,7 @@ def reservar_mesa(request, mesa_id):
             if reservas_conflicto.exists():
                 return render(request, 'reserva_error.html', {'error': 'La mesa ya está reservada en ese horario.'})
 
-            cliente = get_object_or_404(Cliente, user=request.user)
+            cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
             mesa = get_object_or_404(Mesa, pk=mesa_id)
 
             Reserva.objects.create(
@@ -218,11 +215,14 @@ def reservar_mesa(request, mesa_id):
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')
 
-        except Exception as e:
+        except Exception:
             return render(request, 'reserva_error.html', {'error': 'Error al procesar la reserva.'})
 
     return redirect('mesas_disponibles')
 
+# ----------------------------
+# Menú y filtro por categoría
+# ----------------------------
 def menus(request):
     categoria_id = request.GET.get('categoria')
 
@@ -239,16 +239,22 @@ def menus(request):
         'categoria_actual': int(categoria_id) if categoria_id else None
     })
 
-@login_required
+# ----------------------------
+# Ver reservas del cliente
+# ----------------------------
+@cliente_required
 def mis_reservas(request):
-    cliente = get_object_or_404(Cliente, user=request.user)
+    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
     reservas = Reserva.objects.filter(cliente=cliente).order_by('-fecha_inicio')
     return render(request, 'mis_reservas.html', {'reservas': reservas})
 
-@login_required
+# ----------------------------
+# Cancelar reserva
+# ----------------------------
 @cliente_required
 def cancelar_reserva(request, reserva_id):
-    reserva = get_object_or_404(Reserva, id=reserva_id, cliente__user=request.user)
+    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
+    reserva = get_object_or_404(Reserva, id=reserva_id, cliente=cliente)
     if request.method == 'POST':
         reserva.delete()
         messages.success(request, 'La reserva ha sido cancelada exitosamente.')
