@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
@@ -99,6 +101,22 @@ class Reserva(models.Model):
     fecha_fin = models.DateTimeField()
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)  
 
     def __str__(self):
         return f"Reserva de {self.cliente.nombre_apellido} desde {self.fecha_inicio} hasta {self.fecha_fin}"
+    
+class ReservaHistorial(models.Model):
+    fecha_inicio = models.DateTimeField()
+    fecha_fin = models.DateTimeField()
+    cliente = models.ForeignKey('Cliente', on_delete=models.DO_NOTHING)
+    mesa = models.ForeignKey('Mesa', on_delete=models.DO_NOTHING)
+    eliminado_en = models.DateTimeField()
+    creada_en = models.DateTimeField(null=True)  # nueva columna
+
+    class Meta:
+        managed = False
+        db_table = 'reserva_historial'
+
+    def __str__(self):
+        return f"{self.cliente} - Mesa {self.mesa} - {self.fecha_inicio} → {self.fecha_fin}"

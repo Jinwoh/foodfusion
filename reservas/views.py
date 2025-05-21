@@ -99,21 +99,6 @@ def inicio(request):
     })
 
 # ----------------------------
-# Editar datos del cliente
-# ----------------------------
-@cliente_required
-def editar_datos(request):
-    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
-    if request.method == 'POST':
-        cliente.nombre_apellido = request.POST.get('nombre_apellido')
-        cliente.cedula = request.POST.get('cedula')
-        cliente.correo = request.POST.get('correo')
-        cliente.telefono = request.POST.get('telefono')
-        cliente.save()
-        return redirect('mis_datos')
-    return render(request, 'editar_datos.html', {'cliente': cliente})
-
-# ----------------------------
 # Eliminar cuenta del cliente
 # ----------------------------
 @cliente_required
@@ -137,48 +122,64 @@ def eliminar_cuenta(request):
 @cliente_required
 def mis_datos(request):
     cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
-    return render(request, 'mis_datos.html', {'mis_datos': [cliente]})
+
+    if request.method == 'POST' and 'editar' in request.POST:
+        cliente.nombre_apellido = request.POST.get('nombre_apellido')
+        cliente.cedula = request.POST.get('cedula')
+        cliente.correo = request.POST.get('correo')
+        cliente.telefono = request.POST.get('telefono')
+        cliente.save()
+        messages.success(request, "Datos actualizados correctamente.")
+        return redirect('mis_datos')
+
+    return render(request, 'mis_datos.html', {'cliente': cliente})
 
 # ----------------------------
 # Ver mesas disponibles
 # ----------------------------
+@cliente_required
 def mesas_disponibles(request):
     fecha_str = request.GET.get('fecha')
-    hora_str = request.GET.get('hora')
-    duracion_horas = int(request.GET.get('duracion', 2))
+    hora_inicio_str = request.GET.get('hora_inicio')
+    hora_fin_str = request.GET.get('hora_fin')
 
-    if not fecha_str or not hora_str:
-        return render(request, 'mesas_disponibles.html', {'error': 'Debes ingresar la fecha y la hora para buscar mesas.'})
+    mesas_disponibles = []
+    error = None
 
-    try:
-        naive_inicio = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
-        fecha_hora_inicio = timezone.make_aware(naive_inicio)
-        fecha_hora_fin = fecha_hora_inicio + timedelta(hours=duracion_horas)
+    if fecha_str and hora_inicio_str and hora_fin_str:
+        try:
+            naive_inicio = datetime.strptime(f"{fecha_str} {hora_inicio_str}", "%Y-%m-%d %H:%M")
+            naive_fin = datetime.strptime(f"{fecha_str} {hora_fin_str}", "%Y-%m-%d %H:%M")
 
-        hora_min = time(8, 0)
-        hora_max = time(22, 0)
+            fecha_hora_inicio = timezone.make_aware(naive_inicio)
+            fecha_hora_fin = timezone.make_aware(naive_fin)
 
-        if not (hora_min <= fecha_hora_inicio.time() < hora_max):
-            return render(request, 'mesas_disponibles.html', {'error': 'El horario de reserva debe ser entre las 08:00 y las 22:00.'})
-        if fecha_hora_fin.time() > hora_max:
-            return render(request, 'mesas_disponibles.html', {'error': 'La duración excede el horario máximo permitido (22:00).'})
+            hora_min = time(8, 0)
+            hora_max = time(22, 0)
 
-        reservas_conflicto = Reserva.objects.filter(
-            fecha_inicio__lt=fecha_hora_fin,
-            fecha_fin__gt=fecha_hora_inicio
-        ).values_list('mesa_id', flat=True)
+            if fecha_hora_inicio >= fecha_hora_fin:
+                error = "La hora de inicio debe ser menor a la de fin."
+            elif not (hora_min <= fecha_hora_inicio.time() < hora_max) or not (hora_min < fecha_hora_fin.time() <= hora_max):
+                error = "El horario debe ser entre las 08:00 y 22:00."
+            else:
+                reservas_conflicto = Reserva.objects.filter(
+                    fecha_inicio__lt=fecha_hora_fin,
+                    fecha_fin__gt=fecha_hora_inicio
+                ).values_list('mesa_id', flat=True)
 
-        mesas_disponibles = Mesa.objects.exclude(id__in=reservas_conflicto)
+                mesas_disponibles = Mesa.objects.exclude(id__in=reservas_conflicto)
 
-        return render(request, 'mesas_disponibles.html', {
-            'mesas': mesas_disponibles,
-            'fecha': fecha_str,
-            'hora': hora_str,
-            'duracion': duracion_horas,
-        })
+        except ValueError:
+            error = "Formato de fecha u hora inválido."
 
-    except ValueError:
-        return render(request, 'mesas_disponibles.html', {'error': 'Formato de fecha u hora inválido.'})
+    return render(request, 'mesas_disponibles.html', {
+        'mesas': mesas_disponibles,
+        'fecha': fecha_str,
+        'hora_inicio': hora_inicio_str,
+        'hora_fin': hora_fin_str,
+        'error': error
+    })
+
 
 # ----------------------------
 # Reservar mesa
@@ -186,15 +187,29 @@ def mesas_disponibles(request):
 @cliente_required
 def reservar_mesa(request, mesa_id):
     if request.method == 'POST':
-        fecha_str = request.POST.get('fecha')
-        hora_str = request.POST.get('hora')
-        duracion = int(request.POST.get('duracion', 2))
+        fecha_str = request.POST.get('fecha')  # formato esperado: YYYY-MM-DD
+        hora_inicio_str = request.POST.get('hora_inicio')  # HH:MM
+        hora_fin_str = request.POST.get('hora_fin')        # HH:MM
 
         try:
-            naive_inicio = datetime.strptime(f"{fecha_str} {hora_str}", "%Y-%m-%d %H:%M")
-            fecha_hora_inicio = timezone.make_aware(naive_inicio)
-            fecha_hora_fin = fecha_hora_inicio + timedelta(hours=duracion)
+            # Convertir las horas a datetime aware
+            naive_inicio = datetime.strptime(f"{fecha_str} {hora_inicio_str}", "%Y-%m-%d %H:%M")
+            naive_fin = datetime.strptime(f"{fecha_str} {hora_fin_str}", "%Y-%m-%d %H:%M")
 
+            fecha_hora_inicio = timezone.make_aware(naive_inicio)
+            fecha_hora_fin = timezone.make_aware(naive_fin)
+
+            # Validaciones
+            if fecha_hora_inicio >= fecha_hora_fin:
+                return render(request, 'reserva_error.html', {'error': 'La hora de inicio debe ser menor a la de fin.'})
+
+            hora_min = time(8, 0)
+            hora_max = time(22, 0)
+
+            if not (hora_min <= fecha_hora_inicio.time() < hora_max) or not (hora_min < fecha_hora_fin.time() <= hora_max):
+                return render(request, 'reserva_error.html', {'error': 'El horario debe ser entre las 08:00 y 22:00.'})
+
+            # Verificar si hay conflictos con reservas existentes
             reservas_conflicto = Reserva.objects.filter(
                 mesa_id=mesa_id,
                 fecha_inicio__lt=fecha_hora_fin,
@@ -203,6 +218,7 @@ def reservar_mesa(request, mesa_id):
             if reservas_conflicto.exists():
                 return render(request, 'reserva_error.html', {'error': 'La mesa ya está reservada en ese horario.'})
 
+            # Crear la reserva
             cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
             mesa = get_object_or_404(Mesa, pk=mesa_id)
 
@@ -216,10 +232,11 @@ def reservar_mesa(request, mesa_id):
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')
 
-        except Exception:
-            return render(request, 'reserva_error.html', {'error': 'Error al procesar la reserva.'})
+        except Exception as e:
+            return render(request, 'reserva_error.html', {'error': f'Error al procesar la reserva: {e}'})
 
     return redirect('mesas_disponibles')
+
 
 # ----------------------------
 # Menú y filtro por categoría

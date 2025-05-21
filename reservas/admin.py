@@ -1,7 +1,5 @@
 from django.contrib import admin
 from django.utils.html import format_html
-# Register your models here.
-from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import *
 
@@ -49,11 +47,28 @@ class ClienteAdmin(admin.ModelAdmin):
 class MenuCategoriaAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre')
 
-admin.site.register(CategoriaMenu,MenuCategoriaAdmin)
-admin.site.register(Menu,MenuAdmin)
+admin.site.register(CategoriaMenu, MenuCategoriaAdmin)
+admin.site.register(Menu, MenuAdmin)
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Mesa)
 admin.site.register(Reserva, ReservaAdmin)
 
+@admin.register(ReservaHistorial)
+class ReservaHistorialAdmin(admin.ModelAdmin):
+    list_display = ('cliente', 'mesa', 'fecha_inicio', 'fecha_fin', 'creada_en', 'eliminado_en')
+    list_filter = ('mesa', 'fecha_inicio')
+    search_fields = ('cliente__nombre_apellido', 'mesa__numero')
+    actions = ['delete_selected']  # Mostrar solo la acción de eliminar
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        return {'delete_selected': actions['delete_selected']}  # Solo permitir eliminar
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return True
