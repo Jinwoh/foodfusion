@@ -1,16 +1,24 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
 {% block content %}
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
 <body>
-    
     <div class="form-container sign-in">
-        <form method="POST" action="{% url 'login' %}">
+        <form method="POST" action="{% url 'login_cliente' %}">
             {% csrf_token %}
             <h1 class="text-center">Iniciar Sesión</h1>
-            {{ error }}
+
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
             <div class="mb-3">
                 <label for="email">Correo:</label>
                 <input type="email" name="email" required>
@@ -23,6 +31,6 @@
             <button type="submit">Iniciar Sesión</button>
         </form>
     </div>
-
 </body>
 {% endblock %}
+
