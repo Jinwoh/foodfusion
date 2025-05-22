@@ -65,7 +65,7 @@ def cliente_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if 'cliente_id' not in request.session:
-            return redirect('login')
+            return redirect('login_cliente')
         return view_func(request, *args, **kwargs)
     return wrapper
 
