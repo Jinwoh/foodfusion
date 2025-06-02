@@ -26,9 +26,9 @@
     <div class="col-6 col-sm-4 col-md-3 mb-4">
         <div class="text-center">
             {% if menu.img_url %}
-                <img src="{{ menu.img_url.url }}" class="img-fluid" alt="{{ menu.nombre }}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px;">
+                <img src="{{ menu.img_url.url }}" class="img-fluid" alt="{{ menu.nombre }}" style="width: 100%; height: 50% object-fit: cover; border-radius: 10px;">
             {% else %}
-                <img src="{% static 'img/default-food.jpg' %}" class="img-fluid" alt="Sin imagen" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px;">
+                <img src="{% static 'img/default-food.jpg' %}" class="img-fluid" alt="Sin imagen" style="width: 100%; height: 50% object-fit: cover; border-radius: 10px;">
             {% endif %}
             <p class="fw-bold mt-2 text-uppercase">{{ menu.nombre }}</p>
         </div>
