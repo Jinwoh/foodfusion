@@ -33,12 +33,13 @@ function filtrarMenus(categoriaId) {
             data.menus.forEach(menu => {
                 const col = document.createElement('div');
                 col.className = 'col-6 col-sm-4 col-md-3 mb-4';
-                col.innerHTML = `
-                    <div class="text-center">
-                        <img src="${menu.img_url}" class="img-fluid" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px;">
-                        <p class="fw-bold mt-2 text-uppercase">${menu.nombre}</p>
-                    </div>
+            col.innerHTML = `
+                <div class="text-center">
+                <img src="${menu.img_url}" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                <p class="fw-bold mt-2 text-uppercase">${menu.nombre}</p>
+                </div>
                 `;
+
                 contenedor.appendChild(col);
             });
         })
