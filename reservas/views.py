@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Cliente, Menu, CategoriaMenu, Mesa, Reserva
@@ -278,3 +279,21 @@ def cancelar_reserva(request, reserva_id):
         messages.success(request, 'La reserva ha sido cancelada exitosamente.')
         return redirect('mis_reservas')
     return redirect('mis_reservas')
+
+
+
+def menus_filtrados_json(request):
+    categoria_id = request.GET.get('categoria')
+    if categoria_id:
+        menus = Menu.objects.filter(categoria_id=categoria_id, disponible=True)
+    else:
+        menus = Menu.objects.filter(disponible=True)
+
+    data = [
+        {
+            'nombre': menu.nombre,
+            'img_url': menu.img_url.url if menu.img_url else '/static/img/default-food.jpg'
+        }
+        for menu in menus
+    ]
+    return JsonResponse({'menus': data})
