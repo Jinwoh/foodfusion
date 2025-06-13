@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+/* Reset general de margenes y padding, tipografía base y comportamiento de scroll */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    scroll-behavior: smooth;
+    background-color: #fcd773; /* Fondo amarillo fijo */
+    background-attachment: fixed; /* El fondo no se mueve al hacer scroll */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    padding-top: 60px; /* Espacio para la navbar fija */
+}
+
+/* Estilo principal para la barra de navegación */
+.custom-navbar {
+    background: linear-gradient(to left, #fcd773 80%, #C70039 100%); /* Degradado amarillo a rojo */
+    border-bottom: 1px solid rgba(199, 0, 57, 0.2); /* Línea fina debajo */
+    position: fixed; /* Fija la navbar en la parte superior */
+    width: 100%; /* Ancho completo */
+    top: 0; /* Pegada al borde superior */
+    z-index: 1000; /* Para que esté por encima de otros elementos */
+    padding: 0.3rem 1rem; /* Espaciado interno */
+    box-sizing: border-box; /* Incluye padding en el ancho total */
+    height: 60px; /* Altura fija de la navbar */
+}
+
+/* Padding interno para el contenedor dentro de la navbar */
+.custom-navbar .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Estilo para el logo en la navbar */
+.navbar-brand img {
+    width: 60px; /* Ancho del logo */
+    height: 50px; /* Alto del logo */
+    
+}
+
+/* Estilos para los links de navegación alineados a la izquierda */
+.navbar-nav.me-auto {
+    display: flex;
+    gap: 20px; /* Espacio entre links */
+}
+
+/* Estilos para los links de navegación alineados a la derecha */
+.d-flex {
+    gap: 10px; /* Espacio entre links */
+}
+
+/* Estilo base para los enlaces de la navbar con subrayado animado */
+.nav-underline {
+    position: relative;
+    font-size: 18px;
+    padding: 10px 16px;
+    color: #000;
+    text-decoration: none;
+    transition: all 0.3s ease; /* Transición suave para hover */
+}
+
+/* Subrayado animado: barra que aparece desde el centro */
+.nav-underline::before {
+    content: "";
+    position: absolute;
+    width: 0; /* Inicialmente invisible */
+    height: 2px;
+    bottom: 5px;
+    left: 50%; /* Centrado horizontal */
+    background-color: #C70039; /* Color rojo */
+    transition: all 0.3s ease;
+    transform: translateX(-50%); /* Ajuste centrado */
+    opacity: 0.7;
+}
+
+/* Al pasar el mouse, el subrayado se extiende al 100% */
+.nav-underline:hover::before {
+    width: 100%;
+}
+
+/* Estilo para los botones de iniciar sesión y crear cuenta (sin subrayado) */
+.click-btn {
+    display: inline-block;
+    font-size: 18px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+/* Estilo base de los botones */
+.btn-style504 {
+    background-color: #C70039; /* Rojo */
+    color: #fff;
+    border: none;
+}
+
+/* Efecto hover para los botones: fondo blanco con borde rojo */
+.btn-style504:hover {
+    background-color: #fff;
+    color: #C70039;
+    border: 1px solid #C70039;
+}
+
+/* Contenedor principal del mensaje de bienvenida */
+.wave-container {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+    height: 90vh; /* Ocupa 90% del alto de la pantalla */
+    margin: 0;
+    background: #fcd773; /* Fondo amarillo */
+    position: relative;
+    overflow: hidden; /* Esconde elementos que sobresalgan */
+    flex-direction: column; /* Coloca elementos en columna */
+}
+
+/* Estilo para cada letra del texto animado "BIENVENIDO" */
+.wave-text span {
+    display: inline-block;
+    font-size: 6rem; /* Tamaño grande */
+    color: #C70039; /* Rojo */
+    animation: wave 2s ease-in-out infinite; /* Animación repetitiva */
+    font-weight: 700; /* Negrita */
+}
+
+/* Retrasa la animación de cada letra para el efecto onda */
+.wave-text span:nth-child(1) { animation-delay: 0s; }
+.wave-text span:nth-child(2) { animation-delay: 0.1s; }
+.wave-text span:nth-child(3) { animation-delay: 0.2s; }
+.wave-text span:nth-child(4) { animation-delay: 0.3s; }
+.wave-text span:nth-child(5) { animation-delay: 0.4s; }
+.wave-text span:nth-child(6) { animation-delay: 0.5s; }
+.wave-text span:nth-child(7) { animation-delay: 0.6s; }
+.wave-text span:nth-child(8) { animation-delay: 0.7s; }
+.wave-text span:nth-child(9) { animation-delay: 0.8s; }
+.wave-text span:nth-child(10) { animation-delay: 0.9s; }
+
+/* Definición de la animación wave: movimiento vertical */
+@keyframes wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); } /* Subida de 20px */
+}
+
+/* Flecha para indicar que se puede deslizar hacia abajo */
+.scroll-down-arrow {
+    position: absolute;
+    bottom: 65px; /* Distancia desde el borde inferior */
+    left: 50%; /* Centrado horizontal */
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    color: #C70039; /* Rojo */
+    animation: bounce 2s infinite; /* Animación de rebote */
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Cambio de color en hover para la flecha */
+.scroll-down-arrow:hover {
+    color: #900c3f; /* Rojo oscuro */
+}
+
+/* Animación de rebote para la flecha */
+@keyframes bounce {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, 15px); } /* Rebote hacia abajo */
+}
+
+/* Ajuste para subir un poco el texto "BIENVENIDO" */
+.wave-text {
+    margin-top: -30px; /* Mueve el texto hacia arriba */
+}
+
+/* Ajuste para subir un poco la flecha de scroll */
+.scroll-down-arrow {
+    bottom: 85px; /* Sube la flecha 20px más */
+}

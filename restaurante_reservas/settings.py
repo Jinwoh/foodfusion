@@ -113,6 +113,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'reservas' / 'static',
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 
 MEDIA_URL = '/media/'
