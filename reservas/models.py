@@ -1,11 +1,60 @@
-from django.db import models  # type: ignore
-from django.contrib.auth.models import User  # type: ignore
-from django.db import models  # type: ignore
-from django.contrib.auth import get_user_model
-from django.db import models  # type: ignore
-from django.contrib.auth import get_user_model
-User = get_user_model()
+from django.utils import timezone
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+# --- Roles y Empleados (Sistema de autenticación personalizado) ---
+class Rol(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.nombre
+
+class EmpleadoManager(BaseUserManager):
+    def create_user(self, correo, nombre_apellido, cedula, celular, password=None):
+        if not correo:
+            raise ValueError('El usuario debe tener un correo')
+        user = self.model(
+            correo=correo,
+            nombre_apellido=nombre_apellido,
+            cedula=cedula,
+            celular=celular
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, correo, nombre_apellido, cedula, celular, password):
+        user = self.create_user(
+            correo=correo,
+            nombre_apellido=nombre_apellido,
+            cedula=cedula,
+            celular=celular,
+            password=password
+        )
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+
+class Empleado(AbstractBaseUser, PermissionsMixin):
+    correo = models.EmailField(unique=True)
+    nombre_apellido = models.CharField(max_length=100)
+    cedula = models.CharField(max_length=20, unique=True)
+    celular = models.CharField(max_length=20)
+    rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = EmpleadoManager()
+
+    USERNAME_FIELD = 'correo'
+    REQUIRED_FIELDS = ['nombre_apellido', 'cedula', 'celular']
+
+    def __str__(self):
+        return self.nombre_apellido
+
+# --- Modelos del sistema ---
 class CategoriaMenu(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
 
@@ -24,14 +73,14 @@ class Menu(models.Model):
         return f"{self.nombre} - {self.precio} Gs"
 
 class Cliente(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     nombre_apellido = models.CharField(max_length=100)
     cedula = models.CharField(max_length=20, unique=True)
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20)
+    password = models.CharField(max_length=128)
 
     def __str__(self):
-        return f"{self.nombre_apellido} ({self.cedula})"
+        return self.nombre_apellido
 
 class Mesa(models.Model):
     numero = models.PositiveBigIntegerField(unique=True, null=True, blank=True)
@@ -51,16 +100,22 @@ class Reserva(models.Model):
     fecha_fin = models.DateTimeField()
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)  
 
     def __str__(self):
         return f"Reserva de {self.cliente.nombre_apellido} desde {self.fecha_inicio} hasta {self.fecha_fin}"
+    
+class ReservaHistorial(models.Model):
+    fecha_inicio = models.DateTimeField()
+    fecha_fin = models.DateTimeField()
+    cliente = models.ForeignKey('Cliente', on_delete=models.DO_NOTHING)
+    mesa = models.ForeignKey('Mesa', on_delete=models.DO_NOTHING)
+    eliminado_en = models.DateTimeField()
+    creada_en = models.DateTimeField(null=True)  # nueva columna
 
-class Empleado(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
-    nombre_apellido = models.CharField(max_length=100)
-    cedula = models.CharField(max_length=20, unique=True)
-    celular = models.CharField(max_length=20)
-    correo = models.EmailField(unique=True)
+    class Meta:
+        managed = False
+        db_table = 'reserva_historial'
 
     def __str__(self):
-        return self.nombre_apellido
+        return f"{self.cliente} - Mesa {self.mesa} - {self.fecha_inicio} → {self.fecha_fin}"

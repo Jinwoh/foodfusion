@@ -1,9 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-<body> 
-    
 <div class="container mt-4">
     <h2 class="mb-3">Mesas disponibles</h2>
 
@@ -14,24 +11,22 @@
             <input type="date" id="fecha" name="fecha" class="form-control" value="{{ request.GET.fecha }}" required>
         </div>
         <div class="col-md-3">
-            <label for="hora" class="form-label">Hora:</label>
-            <input type="time" id="hora" name="hora" class="form-control" value="{{ request.GET.hora }}" required>
+            <label for="hora_inicio" class="form-label">Hora de inicio:</label>
+            <input type="time" id="hora_inicio" name="hora_inicio" class="form-control" value="{{ request.GET.hora_inicio }}" required>
         </div>
-        <div class="col-md-2">
-            <label for="duracion" class="form-label">Duración (horas):</label>
-            <input type="number" id="duracion" name="duracion" class="form-control" value="{{ request.GET.duracion|default:2 }}" min="1" max="5" required>
+        <div class="col-md-3">
+            <label for="hora_fin" class="form-label">Hora de fin:</label>
+            <input type="time" id="hora_fin" name="hora_fin" class="form-control" value="{{ request.GET.hora_fin }}" required>
         </div>
         <div class="col-md-2 align-self-end">
             <button type="submit" class="btn btn-primary">Buscar</button>
         </div>
     </form>
 
-    <!-- Mensajes de error -->
     {% if error %}
         <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 
-    <!-- Resultados -->
     {% if mesas %}
         <div class="row">
             {% for mesa in mesas %}
@@ -40,13 +35,13 @@
                     <div class="card-body">
                         <h5 class="card-title">Mesa #{{ mesa.numero }}</h5>
                         <p class="card-text">Capacidad: {{ mesa.capacidad }}</p>
-                        
+
                         <!-- Formulario de reserva -->
                         <form method="post" action="{% url 'reservar_mesa' mesa.id %}">
                             {% csrf_token %}
                             <input type="hidden" name="fecha" value="{{ fecha }}">
-                            <input type="hidden" name="hora" value="{{ hora }}">
-                            <input type="hidden" name="duracion" value="{{ duracion }}">
+                            <input type="hidden" name="hora_inicio" value="{{ hora_inicio }}">
+                            <input type="hidden" name="hora_fin" value="{{ hora_fin }}">
                             <button type="submit" class="btn btn-success w-100">Reservar</button>
                         </form>
                     </div>
@@ -55,13 +50,11 @@
             {% endfor %}
         </div>
     
-    {% elif request.GET.fecha and request.GET.hora %}
+    {% elif request.GET.fecha and request.GET.hora_inicio and request.GET.hora_fin %}
         <div class="alert alert-info">No hay mesas disponibles en ese horario.</div>
     
     {% else %}
-        <div class="alert alert-secondary">Selecciona una fecha y hora para buscar mesas disponibles.</div>
+        <div class="alert alert-secondary">Selecciona una fecha y rango de horario para buscar mesas disponibles.</div>
     {% endif %}
 </div>
-</body>
-
 {% endblock %}
