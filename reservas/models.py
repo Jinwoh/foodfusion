@@ -78,6 +78,17 @@ class Cliente(models.Model):
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20)
     password = models.CharField(max_length=128)
+    
+    NOTIFICACION_CHOICES = [
+        ('email', 'Correo'),
+        ('whatsapp', 'WhatsApp'),
+        ('ambos', 'Ambos'),
+    ]
+    preferencia_notificacion = models.CharField(
+        max_length=10,
+        choices=NOTIFICACION_CHOICES,
+        default='email'
+    )
 
     def __str__(self):
         return self.nombre_apellido

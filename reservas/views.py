@@ -252,6 +252,54 @@ def reservar_mesa(request, mesa_id):
                 mesa=mesa
             )
 
+            # ------------------------------------
+            # ENVÍO DE NOTIFICACIÓN (email/WhatsApp)
+            # ------------------------------------
+            from django.core.mail import send_mail
+            from django.conf import settings
+            from twilio.rest import Client
+
+            asunto = "Confirmación de reserva - FoodFusion"
+            mensaje = f"""
+Hola {cliente.nombre_apellido},
+
+Tu reserva fue realizada con éxito. Aquí están los detalles:
+
+- Mesa N°: {mesa.numero}
+- Capacidad: {mesa.capacidad} personas
+- Fecha: {fecha_str}
+- Hora: de {hora_inicio_str} a {hora_fin_str}
+
+Gracias por usar FoodFusion.
+            """
+
+            preferencia = getattr(cliente, 'preferencia_notificacion', 'email')  # valor por defecto
+
+            # Enviar correo si corresponde
+            if preferencia in ['email', 'ambos']:
+                try:
+                    send_mail(
+                        asunto,
+                        mensaje,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [cliente.correo],
+                        fail_silently=False
+                    )
+                except Exception as e:
+                    print("Error al enviar correo:", e)
+
+            # Enviar WhatsApp si corresponde
+            if preferencia in ['whatsapp', 'ambos']:
+                try:
+                    twilio_client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                    twilio_client.messages.create(
+                        body=mensaje,
+                        from_=settings.TWILIO_WHATSAPP_FROM,
+                        to=f"whatsapp:{cliente.telefono}"  # debe estar en formato internacional
+                    )
+                except Exception as e:
+                    print("Error al enviar WhatsApp:", e)
+
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')
 

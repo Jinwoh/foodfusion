@@ -51,6 +51,14 @@
               <label for="telefono" class="form-label">Teléfono</label>
               <input type="text" class="form-control" name="telefono" value="{{ cliente.telefono }}" required>
           </div>
+          
+          <label for="preferencia_notificacion">¿Cómo deseas recibir notificaciones?</label>
+              <select class="form-control" name="preferencia_notificacion" required>
+                <option value="email">Correo</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="ambos">Ambos</option>
+              </select>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
