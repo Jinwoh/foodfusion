@@ -129,6 +129,7 @@ def mis_datos(request):
         cliente.cedula = request.POST.get('cedula')
         cliente.correo = request.POST.get('correo')
         cliente.telefono = request.POST.get('telefono')
+        cliente.preferencia_notificacion = request.POST.get('preferencia_notificacion')
         cliente.save()
         messages.success(request, "Datos actualizados correctamente.")
         return redirect('mis_datos')

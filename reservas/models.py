@@ -78,7 +78,7 @@ class Cliente(models.Model):
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20)
     password = models.CharField(max_length=128)
-    
+
     NOTIFICACION_CHOICES = [
         ('email', 'Correo'),
         ('whatsapp', 'WhatsApp'),
