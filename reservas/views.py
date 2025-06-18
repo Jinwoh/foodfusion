@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Cliente, Menu, CategoriaMenu, Mesa, Reserva
-from datetime import datetime, timedelta, time
+from datetime import datetime, time
 from django.utils import timezone
 from django.db import IntegrityError
 import hashlib
@@ -145,6 +145,7 @@ def mesas_disponibles(request):
     hora_fin_str = request.GET.get('hora_fin')
 
     mesas_disponibles = []
+    horarios_reservados = []
     error = None
 
     if fecha_str and hora_inicio_str and hora_fin_str:
@@ -170,14 +171,35 @@ def mesas_disponibles(request):
 
                 mesas_disponibles = Mesa.objects.exclude(id__in=reservas_conflicto)
 
+                # Horarios reservados en esa fecha (sin importar mesa)
+                fecha_base = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+                dia_inicio = timezone.make_aware(datetime.combine(fecha_base, time.min))
+                dia_fin = timezone.make_aware(datetime.combine(fecha_base, time.max))
+                horarios_reservados = Reserva.objects.filter(
+                    fecha_inicio__gte=dia_inicio,
+                    fecha_inicio__lte=dia_fin
+                ).select_related('mesa').order_by('fecha_inicio')
+
         except ValueError:
             error = "Formato de fecha u hora inválido."
+    elif fecha_str:
+        # Mostrar las reservas del día aunque no se haya buscado hora (opcional)
+        try:
+            dia_inicio = timezone.make_aware(datetime.strptime(fecha_str + " 00:00", "%Y-%m-%d %H:%M"))
+            dia_fin = timezone.make_aware(datetime.strptime(fecha_str + " 23:59", "%Y-%m-%d %H:%M"))
+            horarios_reservados = Reserva.objects.filter(
+                fecha_inicio__gte=dia_inicio,
+                fecha_inicio__lte=dia_fin
+            ).select_related('mesa').order_by('fecha_inicio')
+        except ValueError:
+            pass
 
     return render(request, 'mesas_disponibles.html', {
         'mesas': mesas_disponibles,
         'fecha': fecha_str,
         'hora_inicio': hora_inicio_str,
         'hora_fin': hora_fin_str,
+        'horarios_reservados': horarios_reservados,
         'error': error
     })
 
