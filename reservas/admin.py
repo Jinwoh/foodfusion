@@ -2,6 +2,14 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.contrib.auth.admin import UserAdmin
 from .models import *
+from django.conf import settings
+from twilio.rest import Client
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.shortcuts import redirect
+from .forms import *
+from django.urls import path
+
 
 class EmpleadoAdmin(UserAdmin):
     model = Empleado
@@ -72,3 +80,80 @@ class ReservaHistorialAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return True
+    
+
+class MensajeNotificacionForm(forms.ModelForm):
+    cliente_prueba = forms.ModelChoiceField(
+        queryset=Cliente.objects.all(),
+        required=False,
+        label="Enviar prueba a"
+    )
+    enviar_prueba = forms.BooleanField(
+        required=False,
+        label="Enviar solo prueba (no guardar mensaje)"
+    )
+
+    class Meta:
+        model = MensajeNotificacion
+        fields = ['asunto', 'cuerpo', 'cliente_prueba', 'enviar_prueba']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('enviar_prueba') and not cleaned_data.get('cliente_prueba'):
+            raise forms.ValidationError("Debes seleccionar un cliente para enviar una prueba.")
+        return cleaned_data
+
+    def save(self, commit=True):
+        cleaned_data = self.cleaned_data
+        cliente = cleaned_data.get('cliente_prueba')
+        solo_prueba = cleaned_data.get('enviar_prueba')
+
+        # Reemplazo del mensaje
+        if cliente:
+            mensaje = cleaned_data['cuerpo']
+            asunto = cleaned_data['asunto']
+            datos = {
+                'nombre': cliente.nombre_apellido,
+                'mesa': '12',
+                'capacidad': '4',
+                'fecha': '2025-06-20',
+                'hora_inicio': '19:00',
+                'hora_fin': '20:00'
+            }
+            for clave, valor in datos.items():
+                mensaje = mensaje.replace(f"{{{{ {clave} }}}}", valor)
+
+            # Enviar correo
+            try:
+                send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [cliente.correo])
+            except Exception as e:
+                print("Error enviando correo de prueba:", e)
+
+            # Enviar WhatsApp
+            try:
+                twilio_client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                twilio_client.messages.create(
+                    body=mensaje,
+                    from_=settings.TWILIO_WHATSAPP_FROM,
+                    to=f"whatsapp:{cliente.telefono}"
+                )
+            except Exception as e:
+                print("Error enviando WhatsApp de prueba:", e)
+
+        # No guardar si solo es prueba
+        if solo_prueba:
+            raise forms.ValidationError("Mensaje de prueba enviado correctamente. No se guardó el mensaje.")
+
+        return super().save(commit)
+
+
+@admin.register(MensajeNotificacion)
+class MensajeNotificacionAdmin(admin.ModelAdmin):
+    form = MensajeNotificacionForm
+    list_display = ['asunto', 'fecha_creacion']
+    readonly_fields = ['fecha_creacion']
+
+    def save_model(self, request, obj, form, change):
+        # Solo guardar si no es prueba
+        if not form.cleaned_data.get('enviar_prueba', False):
+            super().save_model(request, obj, form, change)

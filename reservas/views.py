@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.db import IntegrityError
 import hashlib
 from functools import wraps
+from .models import MensajeNotificacion
 
 # ----------------------------
 # Autenticación manual Cliente
@@ -260,8 +261,25 @@ def reservar_mesa(request, mesa_id):
             from django.conf import settings
             from twilio.rest import Client
 
-            asunto = "Confirmación de reserva - FoodFusion"
-            mensaje = f"""
+            # Obtener mensaje personalizado
+            mensaje_obj = MensajeNotificacion.objects.last()
+            if mensaje_obj:
+                mensaje = mensaje_obj.cuerpo
+                asunto = mensaje_obj.asunto
+                reemplazos = {
+                    'nombre': cliente.nombre_apellido,
+                    'mesa': str(mesa.numero),
+                    'capacidad': str(mesa.capacidad),
+                    'fecha': fecha_str,
+                    'hora_inicio': hora_inicio_str,
+                    'hora_fin': hora_fin_str
+                }
+                for clave, valor in reemplazos.items():
+                    mensaje = mensaje.replace(f"{{{{ {clave} }}}}", valor)
+            else:
+                # Mensaje por defecto si no hay personalizado
+                asunto = "Confirmación de reserva - FoodFusion"
+                mensaje = f"""
 Hola {cliente.nombre_apellido},
 
 Tu reserva fue realizada con éxito. Aquí están los detalles:
@@ -272,9 +290,10 @@ Tu reserva fue realizada con éxito. Aquí están los detalles:
 - Hora: de {hora_inicio_str} a {hora_fin_str}
 
 Gracias por usar FoodFusion.
-            """
+                """
 
-            preferencia = getattr(cliente, 'preferencia_notificacion', 'email')  # valor por defecto
+            # Obtener preferencia del cliente
+            preferencia = getattr(cliente, 'preferencia_notificacion', 'email')
 
             # Enviar correo si corresponde
             if preferencia in ['email', 'ambos']:
@@ -296,7 +315,7 @@ Gracias por usar FoodFusion.
                     twilio_client.messages.create(
                         body=mensaje,
                         from_=settings.TWILIO_WHATSAPP_FROM,
-                        to=f"whatsapp:{cliente.telefono}"  # debe estar en formato internacional
+                        to=f"whatsapp:{cliente.telefono}"  # formato internacional
                     )
                 except Exception as e:
                     print("Error al enviar WhatsApp:", e)
@@ -308,6 +327,7 @@ Gracias por usar FoodFusion.
             return render(request, 'reserva_error.html', {'error': f'Error al procesar la reserva: {e}'})
 
     return redirect('mesas_disponibles')
+
 
 
 # ----------------------------

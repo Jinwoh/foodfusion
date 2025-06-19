@@ -3,13 +3,6 @@
 <div class="container d-flex justify-content-center align-items-center min-vh-100">
     <div class="form-container bg-light p-4 rounded shadow-sm w-100" style="max-width: 600px;">
         <h1 class="text-center mb-4">Mis Datos</h1>
-
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-
         <ul class="list-group mb-4">
             <li class="list-group-item"><strong>Nombre y Apellido:</strong> {{ cliente.nombre_apellido }}</li>
             <li class="list-group-item"><strong>Nro de Cédula:</strong> {{ cliente.cedula }}</li>
