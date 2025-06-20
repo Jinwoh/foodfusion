@@ -8,10 +8,12 @@ from django.db import IntegrityError
 import hashlib
 from functools import wraps
 from .models import MensajeNotificacion
+from django.views.decorators.csrf import csrf_protect
 
 # ----------------------------
 # Autenticación manual Cliente
 # ----------------------------
+@csrf_protect
 def login_cliente(request):
     if request.method == 'POST':
         correo = request.POST.get('email')
