@@ -140,9 +140,7 @@ class MensajeNotificacionForm(forms.ModelForm):
             except Exception as e:
                 print("Error enviando WhatsApp de prueba:", e)
 
-        # No guardar si solo es prueba
-        if solo_prueba:
-            raise forms.ValidationError("Mensaje de prueba enviado correctamente. No se guardó el mensaje.")
+       
 
         return super().save(commit)
 
