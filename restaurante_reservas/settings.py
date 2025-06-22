@@ -25,7 +25,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-ALLOWED_HOSTS = ['181.120.17.176' , 'foodfusionwebuass.online', 'www.foodfusionwebuass.online']
+ALLOWED_HOSTS = []
 
 LOGIN_URL = '/login/'
 
