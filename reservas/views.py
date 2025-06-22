@@ -2,15 +2,18 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Cliente, Menu, CategoriaMenu, Mesa, Reserva
-from datetime import datetime, timedelta, time
+from datetime import datetime, time
 from django.utils import timezone
 from django.db import IntegrityError
 import hashlib
 from functools import wraps
+from .models import MensajeNotificacion
+from django.views.decorators.csrf import csrf_protect
 
 # ----------------------------
 # Autenticación manual Cliente
 # ----------------------------
+@csrf_protect
 def login_cliente(request):
     if request.method == 'POST':
         correo = request.POST.get('email')
@@ -129,6 +132,7 @@ def mis_datos(request):
         cliente.cedula = request.POST.get('cedula')
         cliente.correo = request.POST.get('correo')
         cliente.telefono = request.POST.get('telefono')
+        cliente.preferencia_notificacion = request.POST.get('preferencia_notificacion')
         cliente.save()
         messages.success(request, "Datos actualizados correctamente.")
         return redirect('mis_datos')
@@ -145,6 +149,7 @@ def mesas_disponibles(request):
     hora_fin_str = request.GET.get('hora_fin')
 
     mesas_disponibles = []
+    horarios_reservados = []
     error = None
 
     if fecha_str and hora_inicio_str and hora_fin_str:
@@ -170,14 +175,35 @@ def mesas_disponibles(request):
 
                 mesas_disponibles = Mesa.objects.exclude(id__in=reservas_conflicto)
 
+                # Horarios reservados en esa fecha (sin importar mesa)
+                fecha_base = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+                dia_inicio = timezone.make_aware(datetime.combine(fecha_base, time.min))
+                dia_fin = timezone.make_aware(datetime.combine(fecha_base, time.max))
+                horarios_reservados = Reserva.objects.filter(
+                    fecha_inicio__gte=dia_inicio,
+                    fecha_inicio__lte=dia_fin
+                ).select_related('mesa').order_by('fecha_inicio')
+
         except ValueError:
             error = "Formato de fecha u hora inválido."
+    elif fecha_str:
+        # Mostrar las reservas del día aunque no se haya buscado hora (opcional)
+        try:
+            dia_inicio = timezone.make_aware(datetime.strptime(fecha_str + " 00:00", "%Y-%m-%d %H:%M"))
+            dia_fin = timezone.make_aware(datetime.strptime(fecha_str + " 23:59", "%Y-%m-%d %H:%M"))
+            horarios_reservados = Reserva.objects.filter(
+                fecha_inicio__gte=dia_inicio,
+                fecha_inicio__lte=dia_fin
+            ).select_related('mesa').order_by('fecha_inicio')
+        except ValueError:
+            pass
 
     return render(request, 'mesas_disponibles.html', {
         'mesas': mesas_disponibles,
         'fecha': fecha_str,
         'hora_inicio': hora_inicio_str,
         'hora_fin': hora_fin_str,
+        'horarios_reservados': horarios_reservados,
         'error': error
     })
 
@@ -230,6 +256,72 @@ def reservar_mesa(request, mesa_id):
                 mesa=mesa
             )
 
+            # ------------------------------------
+            # ENVÍO DE NOTIFICACIÓN (email/WhatsApp)
+            # ------------------------------------
+            from django.core.mail import send_mail
+            from django.conf import settings
+            from twilio.rest import Client
+
+            # Obtener mensaje personalizado
+            mensaje_obj = MensajeNotificacion.objects.last()
+            if mensaje_obj:
+                mensaje = mensaje_obj.cuerpo
+                asunto = mensaje_obj.asunto
+                reemplazos = {
+                    'nombre': cliente.nombre_apellido,
+                    'mesa': str(mesa.numero),
+                    'capacidad': str(mesa.capacidad),
+                    'fecha': fecha_str,
+                    'hora_inicio': hora_inicio_str,
+                    'hora_fin': hora_fin_str
+                }
+                for clave, valor in reemplazos.items():
+                    mensaje = mensaje.replace(f"{{{{ {clave} }}}}", valor)
+            else:
+                # Mensaje por defecto si no hay personalizado
+                asunto = "Confirmación de reserva - FoodFusion"
+                mensaje = f"""
+Hola {cliente.nombre_apellido},
+
+Tu reserva fue realizada con éxito. Aquí están los detalles:
+
+- Mesa N°: {mesa.numero}
+- Capacidad: {mesa.capacidad} personas
+- Fecha: {fecha_str}
+- Hora: de {hora_inicio_str} a {hora_fin_str}
+
+Gracias por usar FoodFusion.
+                """
+
+            # Obtener preferencia del cliente
+            preferencia = getattr(cliente, 'preferencia_notificacion', 'email')
+
+            # Enviar correo si corresponde
+            if preferencia in ['email', 'ambos']:
+                try:
+                    send_mail(
+                        asunto,
+                        mensaje,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [cliente.correo],
+                        fail_silently=False
+                    )
+                except Exception as e:
+                    print("Error al enviar correo:", e)
+
+            # Enviar WhatsApp si corresponde
+            if preferencia in ['whatsapp', 'ambos']:
+                try:
+                    twilio_client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                    twilio_client.messages.create(
+                        body=mensaje,
+                        from_=settings.TWILIO_WHATSAPP_FROM,
+                        to=f"whatsapp:{cliente.telefono}"  # formato internacional
+                    )
+                except Exception as e:
+                    print("Error al enviar WhatsApp:", e)
+
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')
 
@@ -237,6 +329,7 @@ def reservar_mesa(request, mesa_id):
             return render(request, 'reserva_error.html', {'error': f'Error al procesar la reserva: {e}'})
 
     return redirect('mesas_disponibles')
+
 
 
 # ----------------------------

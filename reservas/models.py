@@ -79,8 +79,34 @@ class Cliente(models.Model):
     telefono = models.CharField(max_length=20)
     password = models.CharField(max_length=128)
 
+    NOTIFICACION_CHOICES = [
+        ('email', 'Correo'),
+        ('whatsapp', 'WhatsApp'),
+        ('ambos', 'Ambos'),
+    ]
+    preferencia_notificacion = models.CharField(
+        max_length=10,
+        choices=NOTIFICACION_CHOICES,
+        default='email'
+    )
+
     def __str__(self):
-        return self.nombre_apellido
+        return f"{self.nombre_apellido} - {self.correo}"
+    
+
+# Apartado de notificaciones
+class MensajeNotificacion(models.Model):
+    asunto = models.CharField(max_length=100, default="Confirmación de reserva - FoodFusion")
+    cuerpo = models.TextField(help_text="Puedes usar los siguientes placeholders: " \
+                                        "{{ nombre }}, {{ mesa }}, " \
+                                        "{{ capacidad }}, {{ fecha }}, " \
+                                        "{{ hora_inicio }}, {{ hora_fin }}")
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Mensaje creado el {self.fecha_creacion.strftime('%Y-%m-%d %H:%M')}"
+    
+
 
 class Mesa(models.Model):
     numero = models.PositiveBigIntegerField(unique=True, null=True, blank=True)
@@ -119,3 +145,5 @@ class ReservaHistorial(models.Model):
 
     def __str__(self):
         return f"{self.cliente} - Mesa {self.mesa} - {self.fecha_inicio} → {self.fecha_fin}"
+
+
