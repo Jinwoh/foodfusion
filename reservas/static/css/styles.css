@@ -14,7 +14,6 @@ body {
     padding-top: 60px; /* Espacio para la navbar fija */
 }
 
-/* Estilo principal para la barra de navegación */
 .custom-navbar {
     background: linear-gradient(to left, #fcd773 80%, #C70039 100%); /* Degradado amarillo a rojo */
     border-bottom: 1px solid rgba(199, 0, 57, 0.2); /* Línea fina debajo */
@@ -27,26 +26,26 @@ body {
     height: 60px; /* Altura fija de la navbar */
 }
 
-/* Padding interno para el contenedor dentro de la navbar */
+
 .custom-navbar .container-fluid {
     padding-left: 1rem;
     padding-right: 1rem;
 }
 
-/* Estilo para el logo en la navbar */
+
 .navbar-brand img {
     width: 60px; /* Ancho del logo */
     height: 50px; /* Alto del logo */
     
 }
 
-/* Estilos para los links de navegación alineados a la izquierda */
+
 .navbar-nav.me-auto {
     display: flex;
     gap: 20px; /* Espacio entre links */
 }
 
-/* Estilos para los links de navegación alineados a la derecha */
+
 .d-flex {
     gap: 10px; /* Espacio entre links */
 }

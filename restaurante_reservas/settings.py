@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,7 +29,29 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'reservas',
+    'pwa',
 ]
+PWA_APP_NAME = 'FoodFusion'
+PWA_APP_DESCRIPTION = "Reserva de mesas en restaurantes"
+PWA_APP_THEME_COLOR = '#007bff'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_START_URL = '/'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/img/icono-pwa.png',
+        'sizes': '512x512'
+    }
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        "src": "/static/img/icono-pwa.png"
+    }
+]
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'reservas/static/js/serviceworker.js')
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

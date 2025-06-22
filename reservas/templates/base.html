@@ -11,57 +11,54 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg custom-navbar">
-        <div class="container-fluid">
-            <a class="navbar-brand d-flex align-items-center" href="{% url 'inicio' %}">
-                <img src="{% static 'img/title-logo.png' %}">
+<nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'inicio' %}"><img src="{% static 'img/title-logo.png' %}"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'inicio' %}">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'mesas_disponibles' %}">Realizar una reserva</a>
+        </li>
+        {% if cliente %}
+            <a class="nav-link" href="{% url 'mis_reservas' %}">Mis Reservas</a>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <strong>{{ cliente.correo }}</strong>
+                </a>
+                <ul class="dropdown-menu">
+                    <li class="nav-item"><a class="dropdown-item" href="{% url 'mis_datos' %}">Mis Datos</a></li>
+                    <li class="nav-item"><a class="dropdown-item" href="{% url 'logout_cliente' %}">Cerrar Sesión</a></li>
+                </ul>
+            </li>
+        {% endif %}
+
+
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Contacto
             </a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav me-auto">
-                    <a class="nav-link nav-underline" href="{% url 'inicio' %}">Inicio</a>
-                    <a class="nav-link nav-underline" href="{% url 'mesas_disponibles' %}">Realizar una reserva</a>
-
-                    {% if cliente %}
-                        <a class="nav-link nav-underline" href="{% url 'mis_reservas' %}">Mis Reservas</a>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle nav-underline" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <strong>{{ cliente.correo }}</strong>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'mis_datos' %}">Mis Datos</a></li>
-                                <li><a class="dropdown-item" href="{% url 'logout_cliente' %}">Cerrar Sesión</a></li>
-                            </ul>
-                        </li>
-                    {% endif %}
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle nav-underline" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Contacto
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Whatsapp</a></li>
-                            <li><a class="dropdown-item" href="#">Correo</a></li>
-                            <li><a class="dropdown-item" href="#">Instagram</a></li>
-                        </ul>
-                    </li>
-                </div>
-
-                <div class="d-flex">
-                    {% if not cliente %}
-                        <a class="click-btn btn-style504 me-2" href="{% url 'login_cliente' %}">Iniciar Sesión</a>
-                        <a class="click-btn btn-style504" href="{% url 'registro_cliente' %}">Crear Cuenta</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Whatsapp</a></li>
+                <li><a class="dropdown-item" href="#">Correo</a></li>
+                <li><a class="dropdown-item" href="#">Instagram</a></li>
+            </ul>
+        </li>
+        <li class="nav-item">
+            {% if not cliente %}
+                <a class="nav-link " href="{% url 'login_cliente' %}">Iniciar Sesión</a>
+                <a class="nav-link " href="{% url 'registro_cliente' %}">Crear Cuenta</a>
+            {% endif %}
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
     {% block content %}
     {% endblock %}
 </body>

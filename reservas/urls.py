@@ -1,4 +1,5 @@
 from django.urls import path
+from django.urls import path, include
 from . import views
 urlpatterns = [
     path('', views.inicio, name='inicio'),
@@ -13,4 +14,6 @@ urlpatterns = [
     path('mis-reservas/cancelar/<int:reserva_id>/', views.cancelar_reserva, name='cancelar_reserva'),
     path('eliminar-cuenta/', views.eliminar_cuenta, name='eliminar_cuenta'),
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
+    path('', include('pwa.urls')),  # debe ir al finalv
+    
 ]

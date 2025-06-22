@@ -5,6 +5,11 @@ body {
     font-family: 'Montserrat', sans-serif;
     margin: 0;
     padding-top: 60px; /* Espacio para la navbar fija */
+    background-color: #fcd773; /* Fondo amarillo fijo */
+    background-attachment: fixed; /* El fondo no se mueve al hacer scroll */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 }
 
 

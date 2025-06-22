@@ -3,9 +3,14 @@
 body {
     background-color: #C70039;
     font-family: 'Montserrat', sans-serif;
+    background-color: #fcd773; /* Fondo amarillo fijo */
+    background-attachment: fixed; /* El fondo no se mueve al hacer scroll */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 }
 
-/* Contenedor centrado y estilizado */
+
 .signup-container {
     max-width: 450px;
     margin: 80px auto;
@@ -16,14 +21,14 @@ body {
     margin-top: 20px;
 }
 
-/* Título */
+
 .signup-container h1 {
     text-align: center;
     color: #C70039;
     margin-bottom: 30px;
 }
 
-/* Inputs */
+
 .signup-container .form-control {
     width: 100%;
     padding: 10px;
@@ -33,7 +38,7 @@ body {
     font-size: 16px;
 }
 
-/* Botón */
+
 .signup-container button {
     width: 100%;
     background-color: #C70039;
