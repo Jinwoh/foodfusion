@@ -1,16 +1,3 @@
-/* signup.css */
-
-body {
-    background-color: #C70039;
-    font-family: 'Montserrat', sans-serif;
-    background-color: #fcd773; /* Fondo amarillo fijo */
-    background-attachment: fixed; /* El fondo no se mueve al hacer scroll */
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-}
-
-
 .signup-container {
     max-width: 450px;
     margin: 80px auto;

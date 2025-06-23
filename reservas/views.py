@@ -237,13 +237,23 @@ def reservar_mesa(request, mesa_id):
                 return render(request, 'reserva_error.html', {'error': 'El horario debe ser entre las 08:00 y 22:00.'})
 
             # Verificar si hay conflictos con reservas existentes
+            try:
+                mesa_id = int(mesa_id)
+            except ValueError:
+                return render(request, 'reserva_error.html', {'error': 'ID de mesa inválido.'})
+
+            # Debug temporal
+            print(f"Reserva solicitada: mesa {mesa_id}, desde {fecha_hora_inicio} hasta {fecha_hora_fin}")
+
             reservas_conflicto = Reserva.objects.filter(
                 mesa_id=mesa_id,
                 fecha_inicio__lt=fecha_hora_fin,
                 fecha_fin__gt=fecha_hora_inicio
             )
+
             if reservas_conflicto.exists():
                 return render(request, 'reserva_error.html', {'error': 'La mesa ya está reservada en ese horario.'})
+
 
             # Crear la reserva
             cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))

@@ -20,18 +20,27 @@ body {
     height: 50px; 
     
 }
+/*.imagen-menu {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    border-radius: 10px;
+}
+*/
 
 /* Pantallas medianas (tablets, < 768px) */
 @media (max-width: 768px) {
   .imagen-menu {
-    max-width: 300px;
+    max-width: 100%;
+    border-radius: 10px;
   }
 }
 
 /* Pantallas pequeñas (móviles, < 480px) */
-@media (max-width: 480px) {
+@media (max-width: 450px) {
   .imagen-menu {
-    max-width: 200px;
+    max-width: 100%;
+    border-radius: 10px;
   }
 }
 
