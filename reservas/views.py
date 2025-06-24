@@ -9,6 +9,8 @@ import hashlib
 from functools import wraps
 from .models import MensajeNotificacion
 from django.views.decorators.csrf import csrf_protect
+from django.core.mail import send_mail
+from django.conf import settings           
 
 # ----------------------------
 # Autenticación manual Cliente
@@ -237,13 +239,23 @@ def reservar_mesa(request, mesa_id):
                 return render(request, 'reserva_error.html', {'error': 'El horario debe ser entre las 08:00 y 22:00.'})
 
             # Verificar si hay conflictos con reservas existentes
+            try:
+                mesa_id = int(mesa_id)
+            except ValueError:
+                return render(request, 'reserva_error.html', {'error': 'ID de mesa inválido.'})
+
+            # Debug temporal
+            print(f"Reserva solicitada: mesa {mesa_id}, desde {fecha_hora_inicio} hasta {fecha_hora_fin}")
+
             reservas_conflicto = Reserva.objects.filter(
                 mesa_id=mesa_id,
                 fecha_inicio__lt=fecha_hora_fin,
                 fecha_fin__gt=fecha_hora_inicio
             )
+
             if reservas_conflicto.exists():
                 return render(request, 'reserva_error.html', {'error': 'La mesa ya está reservada en ese horario.'})
+
 
             # Crear la reserva
             cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
@@ -255,14 +267,6 @@ def reservar_mesa(request, mesa_id):
                 cliente=cliente,
                 mesa=mesa
             )
-
-            # ------------------------------------
-            # ENVÍO DE NOTIFICACIÓN (email/WhatsApp)
-            # ------------------------------------
-            from django.core.mail import send_mail
-            from django.conf import settings
-            from twilio.rest import Client
-
             # Obtener mensaje personalizado
             mensaje_obj = MensajeNotificacion.objects.last()
             if mensaje_obj:
@@ -282,23 +286,20 @@ def reservar_mesa(request, mesa_id):
                 # Mensaje por defecto si no hay personalizado
                 asunto = "Confirmación de reserva - FoodFusion"
                 mensaje = f"""
-Hola {cliente.nombre_apellido},
-
-Tu reserva fue realizada con éxito. Aquí están los detalles:
-
-- Mesa N°: {mesa.numero}
-- Capacidad: {mesa.capacidad} personas
-- Fecha: {fecha_str}
-- Hora: de {hora_inicio_str} a {hora_fin_str}
-
-Gracias por usar FoodFusion.
+            Hola {cliente.nombre_apellido},
+            Tu reserva fue realizada con éxito. Aquí están los detalles:
+            - Mesa N°: {mesa.numero}
+            - Capacidad: {mesa.capacidad} personas
+            - Fecha: {fecha_str}
+            - Hora: de {hora_inicio_str} a {hora_fin_str}
+            Gracias por usar FoodFusion.
                 """
 
             # Obtener preferencia del cliente
             preferencia = getattr(cliente, 'preferencia_notificacion', 'email')
 
             # Enviar correo si corresponde
-            if preferencia in ['email', 'ambos']:
+            if preferencia in ['email']:
                 try:
                     send_mail(
                         asunto,
@@ -310,17 +311,6 @@ Gracias por usar FoodFusion.
                 except Exception as e:
                     print("Error al enviar correo:", e)
 
-            # Enviar WhatsApp si corresponde
-            if preferencia in ['whatsapp', 'ambos']:
-                try:
-                    twilio_client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                    twilio_client.messages.create(
-                        body=mensaje,
-                        from_=settings.TWILIO_WHATSAPP_FROM,
-                        to=f"whatsapp:{cliente.telefono}"  # formato internacional
-                    )
-                except Exception as e:
-                    print("Error al enviar WhatsApp:", e)
 
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')

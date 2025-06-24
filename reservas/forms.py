@@ -2,8 +2,6 @@ from django import forms
 from .models import MensajeNotificacion, Cliente
 from django.core.mail import send_mail
 from django.conf import settings
-from twilio.rest import Client
-
 class MensajeNotificacionForm(forms.ModelForm):
     cliente_prueba = forms.ModelChoiceField(
         queryset=Cliente.objects.all(),
@@ -51,18 +49,4 @@ class MensajeNotificacionForm(forms.ModelForm):
                 send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [cliente.correo])
             except Exception as e:
                 print("Error enviando correo de prueba:", e)
-
-            # Enviar WhatsApp
-            try:
-                client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                client.messages.create(
-                    body=mensaje,
-                    from_=settings.TWILIO_WHATSAPP_FROM,
-                    to=f"whatsapp:{cliente.telefono}"
-                )
-            except Exception as e:
-                print("Error enviando WhatsApp de prueba:", e)
-
-        
-
         return super().save(commit)
