@@ -7,6 +7,7 @@ attrs==25.3.0
 certifi==2025.6.15
 charset-normalizer==3.4.2
 Django==5.2
+django-pwa==2.0.1
 frozenlist==1.7.0
 gunicorn==23.0.0
 idna==3.10

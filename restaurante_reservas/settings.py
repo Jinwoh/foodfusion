@@ -25,7 +25,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-ALLOWED_HOSTS = ['181.120.17.176' , 'foodfusionwebuass.online', 'www.foodfusionwebuass.online']
+ALLOWED_HOSTS = ['31.97.175.35' , 'foodfusionwebuass.online', 'www.foodfusionwebuass.online']
 
 LOGIN_URL = '/login/'
 
@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'restaurante_reservas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': config('DB_ENGINE'),
-        'NAME': 'food-fusion',
+        'NAME': 'foodfusion',
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST'),

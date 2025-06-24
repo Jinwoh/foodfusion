@@ -1,0 +1,20 @@
+[0;1;32m●[0m gunicorn.service - Gunicorn daemon for Django FoodFusion
+     Loaded: loaded (]8;;file://srv880272/etc/systemd/system/gunicorn.service/etc/systemd/system/gunicorn.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Tue 2025-06-24 03:08:19 UTC; 15min ago
+   Main PID: 12092 (gunicorn)
+      Tasks: 4 (limit: 4654)
+     Memory: 114.9M (peak: 115.1M)
+        CPU: 1.078s
+     CGroup: /system.slice/gunicorn.service
+             ├─[0;38;5;245m12092 /var/www/foodfusion/venv/bin/python3 /var/www/foodfusion/venv/bin/gunicorn --workers 3 --bind unix:/var/www/foodfusion/foodfusion.sock restaurante_reservas.wsgi:application[0m
+             ├─[0;38;5;245m12093 /var/www/foodfusion/venv/bin/python3 /var/www/foodfusion/venv/bin/gunicorn --workers 3 --bind unix:/var/www/foodfusion/foodfusion.sock restaurante_reservas.wsgi:application[0m
+             ├─[0;38;5;245m12094 /var/www/foodfusion/venv/bin/python3 /var/www/foodfusion/venv/bin/gunicorn --workers 3 --bind unix:/var/www/foodfusion/foodfusion.sock restaurante_reservas.wsgi:application[0m
+             └─[0;38;5;245m12095 /var/www/foodfusion/venv/bin/python3 /var/www/foodfusion/venv/bin/gunicorn --workers 3 --bind unix:/var/www/foodfusion/foodfusion.sock restaurante_reservas.wsgi:application[0m
+
+Jun 24 03:08:19 srv880272 systemd[1]: Started gunicorn.service - Gunicorn daemon for Django FoodFusion.
+Jun 24 03:08:19 srv880272 gunicorn[12092]: [2025-06-24 03:08:19 +0000] [12092] [INFO] Starting gunicorn 23.0.0
+Jun 24 03:08:19 srv880272 gunicorn[12092]: [2025-06-24 03:08:19 +0000] [12092] [INFO] Listening at: unix:/var/www/foodfusion/foodfusion.sock (12092)
+Jun 24 03:08:19 srv880272 gunicorn[12092]: [2025-06-24 03:08:19 +0000] [12092] [INFO] Using worker: sync
+Jun 24 03:08:19 srv880272 gunicorn[12093]: [2025-06-24 03:08:19 +0000] [12093] [INFO] Booting worker with pid: 12093
+Jun 24 03:08:19 srv880272 gunicorn[12094]: [2025-06-24 03:08:19 +0000] [12094] [INFO] Booting worker with pid: 12094
+Jun 24 03:08:19 srv880272 gunicorn[12095]: [2025-06-24 03:08:19 +0000] [12095] [INFO] Booting worker with pid: 12095
