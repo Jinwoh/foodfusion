@@ -29,6 +29,7 @@
                 <img src="{% static 'img/default-food.jpg' %}" class="img-fluid rounded-3" alt="Sin imagen">
             {% endif %}
             <p class="fw-bold mt-2 text-uppercase">{{ menu.nombre }}</p>
+            <p class="text-muted small">{{ menu.descripcion }}</p>
         </div>
     </div>
     {% endfor %}

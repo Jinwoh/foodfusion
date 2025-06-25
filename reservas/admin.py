@@ -37,7 +37,7 @@ admin.site.index_title = "Panel"
 admin.site.site_title = "FoodFusion"
 
 class MenuAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'categoria', 'precio', 'stock', 'preview_img')
+    list_display = ('nombre', 'descripcion', 'categoria', 'precio', 'stock', 'preview_img')
 
     def preview_img(self, obj):
         if obj.img_url:
