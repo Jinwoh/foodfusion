@@ -13,6 +13,10 @@ SECRET_KEY = 'django-insecure-0l_#mx-7wvd+^&(k+ql7i0n(5@xpy_@*g_$mzk(o+g#_gm1_-m
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
@@ -121,21 +125,17 @@ TIME_ZONE = 'America/Asuncion'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'reservas' / 'static',
 ]
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'reservas/static'),
-]
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'reservas/static'),
-]
+
 
 
 MEDIA_URL = '/media/'

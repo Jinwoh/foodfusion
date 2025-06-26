@@ -1,23 +1,29 @@
 #!/bin/bash
 
-echo "🚀 Iniciando despliegue..."
+echo "🚀 Iniciando despliegue de FoodFusion..."
 
-# Ruta directa al Python del entorno virtual
-PYTHON="/var/www/foodfusion/venv/bin/python"
-
+# Ir al directorio del proyecto
 cd /var/www/foodfusion
 
-# Obtener los cambios
-git pull origin pruebas
+# Activar entorno virtual
+echo "🔄 Activando entorno virtual..."
+source venv/bin/activate
 
-# Migraciones
-$PYTHON manage.py migrate --noinput
+# Obtener últimos cambios del repositorio
+echo "⬇️ Haciendo pull de los últimos cambios..."
+git pull origin master
 
-# Archivos estáticos
-$PYTHON manage.py collectstatic --noinput
+# Aplicar migraciones (por si se cambió la base de datos)
+echo "🔧 Aplicando migraciones..."
+python manage.py migrate
 
-# Reiniciar Gunicorn
+# Recolectar archivos estáticos (script.js, CSS, imágenes)
+echo "📦 Recolectando archivos estáticos..."
+python manage.py collectstatic --noinput
+
+# Reiniciar Gunicorn para aplicar cambios en producción
+echo "♻️ Reiniciando Gunicorn..."
 sudo systemctl restart gunicorn
 
-echo "✅ Despliegue finalizado."
+echo "✅ Despliegue completado con éxito."
 
