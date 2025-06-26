@@ -55,11 +55,29 @@ class ClienteAdmin(admin.ModelAdmin):
 class MenuCategoriaAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre')
 
+
+class MesaAdmin(admin.ModelAdmin):
+    list_display = ('numero_display', 'capacidad_display', 'estado_display')
+
+    def numero_display(self, obj):
+        return obj.numero
+    numero_display.short_description = 'Número de Mesa'
+
+    def capacidad_display(self, obj):
+        return obj.capacidad
+    capacidad_display.short_description = 'Capacidad de Personas'
+
+    def estado_display(self, obj):
+        return obj.estado
+    estado_display.short_description = 'Estado actual'
+
 admin.site.register(CategoriaMenu, MenuCategoriaAdmin)
 admin.site.register(Menu, MenuAdmin)
 admin.site.register(Cliente, ClienteAdmin)
-admin.site.register(Mesa)
+admin.site.register(Mesa, MesaAdmin)
 admin.site.register(Reserva, ReservaAdmin)
+
+
 
 @admin.register(ReservaHistorial)
 class ReservaHistorialAdmin(admin.ModelAdmin):
@@ -128,19 +146,6 @@ class MensajeNotificacionForm(forms.ModelForm):
                 send_mail(asunto, mensaje, settings.DEFAULT_FROM_EMAIL, [cliente.correo])
             except Exception as e:
                 print("Error enviando correo de prueba:", e)
-
-            # Enviar WhatsApp
-            try:
-                twilio_client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-                twilio_client.messages.create(
-                    body=mensaje,
-                    from_=settings.TWILIO_WHATSAPP_FROM,
-                    to=f"whatsapp:{cliente.telefono}"
-                )
-            except Exception as e:
-                print("Error enviando WhatsApp de prueba:", e)
-
-       
 
         return super().save(commit)
 

@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // --------------------------
+    // Botones login/register
+    // --------------------------
     const container = document.getElementById('container');
     const registerBtn = document.getElementById('register');
     const loginBtn = document.getElementById('login');
@@ -13,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --------------------------
+    // Enlace WhatsApp dinámico
+    // --------------------------
     const enlaceWhatsapp = document.getElementById('btn-whatsapp');
 
     if (enlaceWhatsapp) {
