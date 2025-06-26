@@ -295,22 +295,6 @@ def reservar_mesa(request, mesa_id):
             Gracias por usar FoodFusion.
                 """
 
-            # Obtener preferencia del cliente
-            preferencia = getattr(cliente, 'preferencia_notificacion', 'email')
-
-            # Enviar correo si corresponde
-            if preferencia in ['email']:
-                try:
-                    send_mail(
-                        asunto,
-                        mensaje,
-                        settings.DEFAULT_FROM_EMAIL,
-                        [cliente.correo],
-                        fail_silently=False
-                    )
-                except Exception as e:
-                    print("Error al enviar correo:", e)
-
 
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')

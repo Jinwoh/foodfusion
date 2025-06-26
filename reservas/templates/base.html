@@ -40,11 +40,12 @@
 
 
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Contacto
-            </a>
+            <button class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">Contacto</button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="mailto:foodfusionweb@gmail.com">Correo</a></li>
+                  <li><a class="dropdown-item" href="mailto:foodfusionweb@gmail.com" target="_blank">Correo</a></li>
+                <li><a class="dropdown-item" id="btn-whatsapp" href="#" target="_blank">WhatsApp</a></li>
+
+
             </ul>
         </li>
         <li class="nav-item">
@@ -63,5 +64,6 @@
 </nav>
     {% block content %}
     {% endblock %}
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
