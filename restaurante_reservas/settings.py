@@ -42,25 +42,7 @@ INSTALLED_APPS = [
     'reservas',
     'pwa',
 ]
-PWA_APP_NAME = 'FoodFusion'
-PWA_APP_DESCRIPTION = "Reserva de mesas en restaurantes"
-PWA_APP_THEME_COLOR = '#007bff'
-PWA_APP_BACKGROUND_COLOR = '#ffffff'
-PWA_APP_DISPLAY = 'standalone'
-PWA_APP_SCOPE = '/'
-PWA_APP_START_URL = '/'
-PWA_APP_ICONS = [
-    {
-        'src': '/static/img/icono-pwa.png',
-        'sizes': '512x512'
-    }
-]
-PWA_APP_ICONS_APPLE = [
-    {
-        "src": "/static/img/icono-pwa.png"
-    }
-]
-PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'reservas/static/js/serviceworker.js')
+
 
 
 
@@ -102,10 +84,10 @@ WSGI_APPLICATION = 'restaurante_reservas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': config('DB_ENGINE'),
-        'NAME': 'food-fusion',
+        'NAME': 'foodfusion',
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
+        'HOST': '31.97.175.35',
         'PORT': config('DB_PORT')
     }
 }
@@ -151,6 +133,8 @@ STATICFILES_DIRS = [
     BASE_DIR / 'reservas' / 'static',
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_DIRS = [ BASE_DIR / 'reservas/static' ]
 
 
 
