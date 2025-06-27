@@ -294,7 +294,13 @@ def reservar_mesa(request, mesa_id):
             - Hora: de {hora_inicio_str} a {hora_fin_str}
             Gracias por usar FoodFusion.
                 """
-
+            send_mail(
+            subject=asunto,
+            message=mensaje,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[cliente.correo],
+            fail_silently=True  # Puedes poner True si estás en producción
+)
 
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')
