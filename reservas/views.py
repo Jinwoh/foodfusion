@@ -103,43 +103,30 @@ def inicio(request):
         'categorias': categorias,
         'categoria_actual': categoria_actual
     })
-
-# ----------------------------
-# Eliminar cuenta del cliente
-# ----------------------------
-@cliente_required
-def eliminar_cuenta(request):
-    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
-    if request.method == 'POST':
-        password = request.POST.get('password')
-        hashed = hashlib.sha256(password.encode()).hexdigest()
-        if cliente.password != hashed:
-            return render(request, 'mis_datos.html', {'error': 'Contraseña incorrecta.'})
-
-        cliente.delete()
-        request.session.flush()
-        return redirect('inicio')
-
-    return render(request, 'mis_datos.html')
-
-# ----------------------------
-# Ver datos del cliente
-# ----------------------------
 @cliente_required
 def mis_datos(request):
     cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
-
-    if request.method == 'POST' and 'editar' in request.POST:
-        cliente.nombre_apellido = request.POST.get('nombre_apellido')
-        cliente.cedula = request.POST.get('cedula')
-        cliente.correo = request.POST.get('correo')
-        cliente.telefono = request.POST.get('telefono')
-        cliente.preferencia_notificacion = request.POST.get('preferencia_notificacion')
-        cliente.save()
-        messages.success(request, "Datos actualizados correctamente.")
-        return redirect('mis_datos')
-
-    return render(request, 'mis_datos.html', {'cliente': cliente})
+    if request.method == 'POST':
+        if 'editar' in request.POST:
+            cliente.nombre_apellido = request.POST.get('nombre_apellido')
+            cliente.cedula = request.POST.get('cedula')
+            cliente.correo = request.POST.get('correo')
+            cliente.telefono = request.POST.get('telefono')
+            cliente.save()
+            messages.success(request, "Datos actualizados correctamente.")
+            return redirect('mis_datos') 
+        elif 'eliminar' in request.POST:
+            password = request.POST.get('password')
+            hashed = hashlib.sha256(password.encode()).hexdigest()
+            if cliente.password != hashed:
+                return render(request, 'mis_datos.html', {
+                'cliente': cliente,
+                'error': 'Contraseña incorrecta.'
+                })
+            cliente.delete()
+            request.session.flush()
+            return redirect('inicio')
+    return render(request, 'mis_datos.html', {'cliente': cliente})    
 
 # ----------------------------
 # Ver mesas disponibles

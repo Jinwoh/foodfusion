@@ -12,7 +12,6 @@ urlpatterns = [
     path('mesas/', views.mesas_disponibles, name='mesas_disponibles'),
     path('reservar/<int:mesa_id>/', views.reservar_mesa, name='reservar_mesa'),
     path('mis-reservas/cancelar/<int:reserva_id>/', views.cancelar_reserva, name='cancelar_reserva'),
-    path('eliminar-cuenta/', views.eliminar_cuenta, name='eliminar_cuenta'),
     path('mis-reservas/', views.mis_reservas, name='mis_reservas'),
     path('', include('pwa.urls')),  # debe ir al finalv
     

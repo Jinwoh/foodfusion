@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5 text-center" id="menu-section">
+    <h2 class="fw-bold mb-4">Explora nuestros menús</h2>
+
+    <!-- Filtro por categoría -->
+    <div class="mb-4">
+        <h5 class="mb-3">Filtrar por categoría</h5>
+        <div class="d-flex justify-content-center flex-wrap gap-2 px-2" id="filtros-categorias">
+            <button data-categoria="" class="btn btn-outline-dark active">Todos</button>
+        {% for categoria in categorias %}
+            <button data-categoria="{{ categoria.id }}" class="btn btn-outline-dark">
+        {{ categoria.nombre }}
+            </button>
+        {% endfor %}
+        </div>
+    </div>
+
+    <!-- Listado de menús -->
+<div class="row justify-content-center" id="contenedor-menus">
+    {% for menu in menus %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+        <div class="text-center h-100 px-2">
+            {% if menu.img_url %}
+                <img src="{{ menu.img_url.url }}" class="img-fluid rounded-3" alt="{{ menu.nombre }}">
+            {% else %}
+                <img src="{% static 'img/default-food.jpg' %}" class="img-fluid rounded-3" alt="Sin imagen">
+            {% endif %}
+            <p class="fw-bold mt-2 text-uppercase">{{ menu.nombre }}</p>
+            <p class="text-muted small">{{ menu.descripcion }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+<!-- Script de filtrado -->
+<script src="{% static 'js/filtradoMenus.js' %}"></script>
+{% endblock %}
