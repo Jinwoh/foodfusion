@@ -19,7 +19,7 @@ MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
 
 
 DEBUG = True
-CSRF_COOKIE_SECURE = True
+'''CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = ['https://www.foodfusionwebuass.online']
@@ -28,7 +28,7 @@ CSRF_TRUSTED_ORIGINS = ['https://www.foodfusionwebuass.online']
 CSRF_TRUSTED_ORIGINS = [
     'https://foodfusionwebuass.online',
     'https://www.foodfusionwebuass.online'
-]
+]'''
 
 
 ALLOWED_HOSTS = []

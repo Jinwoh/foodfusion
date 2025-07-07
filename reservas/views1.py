@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Cliente, Menu, CategoriaMenu, Mesa, Reserva
-from datetime import datetime, time, timedelta
+from datetime import datetime, time
 from django.utils import timezone
 from django.db import IntegrityError
 import hashlib
@@ -10,7 +10,8 @@ from functools import wraps
 from .models import MensajeNotificacion
 from django.views.decorators.csrf import csrf_protect
 from django.core.mail import send_mail
-from django.conf import settings           
+from django.conf import settings
+from twilio.rest import Client
 
 # ----------------------------
 # Autenticación manual Cliente
@@ -103,6 +104,12 @@ def inicio(request):
         'categorias': categorias,
         'categoria_actual': categoria_actual
     })
+
+
+
+# ----------------------------
+# Ver datos del cliente
+# ----------------------------
 @cliente_required
 def mis_datos(request):
     cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
@@ -128,8 +135,39 @@ def mis_datos(request):
             return redirect('inicio')
     return render(request, 'mis_datos.html', {'cliente': cliente})    
 
+'''def mis_datos(request):
+    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
 
+    if request.method == 'POST' and 'editar' in request.POST:
+        cliente.nombre_apellido = request.POST.get('nombre_apellido')
+        cliente.cedula = request.POST.get('cedula')
+        cliente.correo = request.POST.get('correo')
+        cliente.telefono = request.POST.get('telefono')
+        cliente.save()
+        messages.success(request, "Datos actualizados correctamente.")
+        return redirect('mis_datos')
 
+    return render(request, 'mis_datos.html', {'cliente': cliente})
+
+# ----------------------------
+# Eliminar cuenta del cliente
+# ----------------------------
+@cliente_required
+def eliminar_cuenta(request):
+    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
+    print("Solicitud POST recibida en eliminar_cuenta")
+    if request.method == 'POST':
+        print("Solicitud POST recibida en eliminar_cuenta")
+        password = request.POST.get('password')
+        hashed = hashlib.sha256(password.encode()).hexdigest()
+        if cliente.password != hashed:
+            return render(request, 'mis_datos.html', {'error': 'Contraseña incorrecta.'})
+        cliente.delete()
+        request.session.flush()
+        return redirect('inicio')
+
+    return render(request, 'mis_datos.html')
+'''
 # ----------------------------
 # Ver mesas disponibles
 # ----------------------------
@@ -151,16 +189,13 @@ def mesas_disponibles(request):
             fecha_hora_inicio = timezone.make_aware(naive_inicio)
             fecha_hora_fin = timezone.make_aware(naive_fin)
 
-            hora_min = time(17, 0)
+            hora_min = time(8, 0)
             hora_max = time(22, 0)
 
-            # Validaciones
             if fecha_hora_inicio >= fecha_hora_fin:
                 error = "La hora de inicio debe ser menor a la de fin."
             elif not (hora_min <= fecha_hora_inicio.time() < hora_max) or not (hora_min < fecha_hora_fin.time() <= hora_max):
-                error = "El horario debe ser entre las 17:00 y 22:00."
-            elif (fecha_hora_fin - fecha_hora_inicio) < timedelta(minutes=30):
-                error = "La duración mínima de la reserva es de 30 minutos."
+                error = "El horario debe ser entre las 08:00 y 22:00."
             else:
                 reservas_conflicto = Reserva.objects.filter(
                     fecha_inicio__lt=fecha_hora_fin,
@@ -181,6 +216,7 @@ def mesas_disponibles(request):
         except ValueError:
             error = "Formato de fecha u hora inválido."
     elif fecha_str:
+        # Mostrar las reservas del día aunque no se haya buscado hora (opcional)
         try:
             dia_inicio = timezone.make_aware(datetime.strptime(fecha_str + " 00:00", "%Y-%m-%d %H:%M"))
             dia_fin = timezone.make_aware(datetime.strptime(fecha_str + " 23:59", "%Y-%m-%d %H:%M"))
@@ -197,9 +233,9 @@ def mesas_disponibles(request):
         'hora_inicio': hora_inicio_str,
         'hora_fin': hora_fin_str,
         'horarios_reservados': horarios_reservados,
-        'error': error,
-        'horas_validas': generar_horas_validas(),  # útil si usás select en vez de Flatpickr
+        'error': error
     })
+
 
 # ----------------------------
 # Reservar mesa
@@ -258,6 +294,12 @@ def reservar_mesa(request, mesa_id):
                 cliente=cliente,
                 mesa=mesa
             )
+
+            # ------------------------------------
+            # ENVÍO DE NOTIFICACIÓN (email/WhatsApp)
+            # ------------------------------------
+  
+
             # Obtener mensaje personalizado
             mensaje_obj = MensajeNotificacion.objects.last()
             if mensaje_obj:
@@ -277,21 +319,45 @@ def reservar_mesa(request, mesa_id):
                 # Mensaje por defecto si no hay personalizado
                 asunto = "Confirmación de reserva - FoodFusion"
                 mensaje = f"""
-            Hola {cliente.nombre_apellido},
-            Tu reserva fue realizada con éxito. Aquí están los detalles:
-            - Mesa N°: {mesa.numero}
-            - Capacidad: {mesa.capacidad} personas
-            - Fecha: {fecha_str}
-            - Hora: de {hora_inicio_str} a {hora_fin_str}
-            Gracias por usar FoodFusion.
+Hola {cliente.nombre_apellido},
+
+Tu reserva fue realizada con éxito. Aquí están los detalles:
+
+- Mesa N°: {mesa.numero}
+- Capacidad: {mesa.capacidad} personas
+- Fecha: {fecha_str}
+- Hora: de {hora_inicio_str} a {hora_fin_str}
+
+Gracias por usar FoodFusion.
                 """
-            send_mail(
-            subject=asunto,
-            message=mensaje,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[cliente.correo],
-            fail_silently=True  # Puedes poner True si estás en producción
-)
+
+            # Obtener preferencia del cliente
+            preferencia = getattr(cliente, 'preferencia_notificacion', 'email')
+
+            # Enviar correo si corresponde
+            if preferencia in ['email', 'ambos']:
+                try:
+                    send_mail(
+                        asunto,
+                        mensaje,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [cliente.correo],
+                        fail_silently=False
+                    )
+                except Exception as e:
+                    print("Error al enviar correo:", e)
+
+            # Enviar WhatsApp si corresponde
+            if preferencia in ['whatsapp', 'ambos']:
+                try:
+                    twilio_client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+                    twilio_client.messages.create(
+                        body=mensaje,
+                        from_=settings.TWILIO_WHATSAPP_FROM,
+                        to=f"whatsapp:{cliente.telefono}"  # formato internacional
+                    )
+                except Exception as e:
+                    print("Error al enviar WhatsApp:", e)
 
             messages.success(request, 'Reserva realizada con éxito.')
             return redirect('mis_reservas')
