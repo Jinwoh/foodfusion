@@ -9,6 +9,9 @@ import hashlib
 from functools import wraps
 from .models import MensajeNotificacion
 from django.views.decorators.csrf import csrf_protect
+from django.core.mail import send_mail
+from django.conf import settings
+from twilio.rest import Client
 
 # ----------------------------
 # Autenticación manual Cliente
@@ -113,7 +116,6 @@ def eliminar_cuenta(request):
         hashed = hashlib.sha256(password.encode()).hexdigest()
         if cliente.password != hashed:
             return render(request, 'mis_datos.html', {'error': 'Contraseña incorrecta.'})
-
         cliente.delete()
         request.session.flush()
         return redirect('inicio')
@@ -132,7 +134,6 @@ def mis_datos(request):
         cliente.cedula = request.POST.get('cedula')
         cliente.correo = request.POST.get('correo')
         cliente.telefono = request.POST.get('telefono')
-        cliente.preferencia_notificacion = request.POST.get('preferencia_notificacion')
         cliente.save()
         messages.success(request, "Datos actualizados correctamente.")
         return redirect('mis_datos')
@@ -269,9 +270,7 @@ def reservar_mesa(request, mesa_id):
             # ------------------------------------
             # ENVÍO DE NOTIFICACIÓN (email/WhatsApp)
             # ------------------------------------
-            from django.core.mail import send_mail
-            from django.conf import settings
-            from twilio.rest import Client
+  
 
             # Obtener mensaje personalizado
             mensaje_obj = MensajeNotificacion.objects.last()

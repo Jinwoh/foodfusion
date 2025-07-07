@@ -9,17 +9,7 @@
             <li class="list-group-item"><strong>Correo electrónico:</strong> {{ cliente.correo }}</li>
             <li class="list-group-item"><strong>Nro de Teléfono:</strong> {{ cliente.telefono }}</li>
             <li class="list-group-item">
-              <strong>Tipo de Notificación:</strong>
-              {% if cliente.preferencia_notificacion == 'email' %}
-                Correo
-              {% elif cliente.preferencia_notificacion == 'whatsapp' %}
-                WhatsApp
-              {% elif cliente.preferencia_notificacion == 'ambos' %}
-                Correo y WhatsApp
-              {% else %}
-                No especificado
-              {% endif %}
-            </li>
+              <strong>Tipo de Notificación:</strong> Correo</li>
         </ul>
 
         <div class="text-center">
@@ -55,21 +45,12 @@
           <div class="mb-3">
               <label for="telefono" class="form-label">Teléfono</label>
               <input type="text" class="form-control" name="telefono" value="{{ cliente.telefono }}" required>
-          <div class="mb-3">
-
-          <label for="preferencia_notificacion" class="form-label">¿Cómo deseas recibir notificaciones?</label>
-
-            <select class="form-control" name="preferencia_notificacion" required>
-              <option value="email" {% if cliente.preferencia_notificacion == 'email' %}selected{% endif %}>Correo</option>
-              <option value="whatsapp" {% if cliente.preferencia_notificacion == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
-              <option value="ambos" {% if cliente.preferencia_notificacion == 'ambos' %}selected{% endif %}>Ambos</option>
-            </select>
-
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" name="editar" class="btn btn-primary">Guardar cambios</button>
-        </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" name="editar" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </div>  
       </form>
     </div>
   </div>

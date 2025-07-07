@@ -12,6 +12,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-0l_#mx-7wvd+^&(k+ql7i0n(5@xpy_@*g_$mzk(o+g#_gm1_-m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
+MEDIA_URL = 'https://foodfusionwebuass.online/media/'
+MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
+
+
+
 DEBUG = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
@@ -138,8 +144,8 @@ STATICFILES_DIRS = [ BASE_DIR / 'reservas/static' ]
 
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+#MEDIA_URL = '/media/'
+#MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
