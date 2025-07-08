@@ -21,17 +21,31 @@ body {
     
 }
 
+.custom-navbar {
+    background: linear-gradient(to left, #fcd773 80%, #C70039 100%); /* Degradado amarillo a rojo */
+    border-bottom: 1px solid rgba(199, 0, 57, 0.2); /* Línea fina debajo */
+    position: fixed; /* Fija la navbar en la parte superior */
+    width: 100%; /* Ancho completo */
+    top: 0; /* Pegada al borde superior */
+    z-index: 1000; /* Para que esté por encima de otros elementos */
+    padding: 0.3rem 1rem; /* Espaciado interno */
+    box-sizing: border-box; /* Incluye padding en el ancho total */
+    height: 60px; /* Altura fija de la navbar */
+}
 
 /* Pantallas medianas (tablets, < 768px) */
 @media (max-width: 768px) {
   .imagen-menu {
-    max-width: 300px;
+    max-width: 100%;
+    border-radius: 10px;
   }
 }
 
 /* Pantallas pequeñas (móviles, < 480px) */
 @media (max-width: 450px) {
   .imagen-menu {
-    max-width: 180px;
+    max-width: 100%;
+    border-radius: 10px;
   }
 }
+

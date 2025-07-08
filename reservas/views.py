@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Cliente, Menu, CategoriaMenu, Mesa, Reserva
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from django.utils import timezone
 from django.db import IntegrityError
 import hashlib
@@ -128,6 +128,8 @@ def mis_datos(request):
             return redirect('inicio')
     return render(request, 'mis_datos.html', {'cliente': cliente})    
 
+
+
 # ----------------------------
 # Ver mesas disponibles
 # ----------------------------
@@ -149,13 +151,16 @@ def mesas_disponibles(request):
             fecha_hora_inicio = timezone.make_aware(naive_inicio)
             fecha_hora_fin = timezone.make_aware(naive_fin)
 
-            hora_min = time(8, 0)
+            hora_min = time(17, 0)
             hora_max = time(22, 0)
 
+            # Validaciones
             if fecha_hora_inicio >= fecha_hora_fin:
                 error = "La hora de inicio debe ser menor a la de fin."
             elif not (hora_min <= fecha_hora_inicio.time() < hora_max) or not (hora_min < fecha_hora_fin.time() <= hora_max):
-                error = "El horario debe ser entre las 08:00 y 22:00."
+                error = "El horario debe ser entre las 17:00 y 22:00."
+            elif (fecha_hora_fin - fecha_hora_inicio) < timedelta(minutes=30):
+                error = "La duración mínima de la reserva es de 30 minutos."
             else:
                 reservas_conflicto = Reserva.objects.filter(
                     fecha_inicio__lt=fecha_hora_fin,
@@ -176,7 +181,6 @@ def mesas_disponibles(request):
         except ValueError:
             error = "Formato de fecha u hora inválido."
     elif fecha_str:
-        # Mostrar las reservas del día aunque no se haya buscado hora (opcional)
         try:
             dia_inicio = timezone.make_aware(datetime.strptime(fecha_str + " 00:00", "%Y-%m-%d %H:%M"))
             dia_fin = timezone.make_aware(datetime.strptime(fecha_str + " 23:59", "%Y-%m-%d %H:%M"))
@@ -193,9 +197,9 @@ def mesas_disponibles(request):
         'hora_inicio': hora_inicio_str,
         'hora_fin': hora_fin_str,
         'horarios_reservados': horarios_reservados,
-        'error': error
+        'error': error,
+      
     })
-
 
 # ----------------------------
 # Reservar mesa

@@ -76,13 +76,25 @@
             {% endfor %}
         </tbody>
     </table>
-    {% endif %}
+{% endif %}
+
 </div>
 
-<!-- Flatpickr base -->
+<!-- Flatpickr -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-<!-- Tu scripts.js debe estar cargado aquí -->
-
+<script>
+  flatpickr("#hora_inicio", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true
+  });
+  flatpickr("#hora_fin", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true
+  });
+</script>
 {% endblock %}
