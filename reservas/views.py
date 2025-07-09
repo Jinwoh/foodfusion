@@ -11,6 +11,7 @@ from .models import MensajeNotificacion
 from django.views.decorators.csrf import csrf_protect
 from django.core.mail import send_mail
 from django.conf import settings           
+from django.views.decorators.http import require_POST
 
 # ----------------------------
 # Autenticación manual Cliente
@@ -198,7 +199,7 @@ def mesas_disponibles(request):
         'hora_fin': hora_fin_str,
         'horarios_reservados': horarios_reservados,
         'error': error,
-        'horas_validas': generar_horas_validas(),  # útil si usás select en vez de Flatpickr
+         # útil si usás select en vez de Flatpickr
     })
 
 # ----------------------------
@@ -207,50 +208,35 @@ def mesas_disponibles(request):
 @cliente_required
 def reservar_mesa(request, mesa_id):
     if request.method == 'POST':
-        fecha_str = request.POST.get('fecha')  # formato esperado: YYYY-MM-DD
-        hora_inicio_str = request.POST.get('hora_inicio')  # HH:MM
-        hora_fin_str = request.POST.get('hora_fin')        # HH:MM
+        fecha_str = request.POST.get('fecha')
+        hora_inicio_str = request.POST.get('hora_inicio')
+        hora_fin_str = request.POST.get('hora_fin')
 
         try:
-            # Convertir las horas a datetime aware
             naive_inicio = datetime.strptime(f"{fecha_str} {hora_inicio_str}", "%Y-%m-%d %H:%M")
             naive_fin = datetime.strptime(f"{fecha_str} {hora_fin_str}", "%Y-%m-%d %H:%M")
-
             fecha_hora_inicio = timezone.make_aware(naive_inicio)
             fecha_hora_fin = timezone.make_aware(naive_fin)
 
-            # Validaciones
             if fecha_hora_inicio >= fecha_hora_fin:
-                return render(request, 'reserva_error.html', {'error': 'La hora de inicio debe ser menor a la de fin.'})
+                return _respuesta_reserva(request, success=False, error="Hora de inicio debe ser menor a la de fin.")
 
             hora_min = time(8, 0)
             hora_max = time(22, 0)
-
             if not (hora_min <= fecha_hora_inicio.time() < hora_max) or not (hora_min < fecha_hora_fin.time() <= hora_max):
-                return render(request, 'reserva_error.html', {'error': 'El horario debe ser entre las 08:00 y 22:00.'})
+                return _respuesta_reserva(request, success=False, error="Horario fuera de rango permitido.")
 
-            # Verificar si hay conflictos con reservas existentes
-            try:
-                mesa_id = int(mesa_id)
-            except ValueError:
-                return render(request, 'reserva_error.html', {'error': 'ID de mesa inválido.'})
+            cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
+            mesa = get_object_or_404(Mesa, pk=mesa_id)
 
-            # Debug temporal
-            print(f"Reserva solicitada: mesa {mesa_id}, desde {fecha_hora_inicio} hasta {fecha_hora_fin}")
-
-            reservas_conflicto = Reserva.objects.filter(
+            conflicto = Reserva.objects.filter(
                 mesa_id=mesa_id,
                 fecha_inicio__lt=fecha_hora_fin,
                 fecha_fin__gt=fecha_hora_inicio
-            )
+            ).exists()
 
-            if reservas_conflicto.exists():
-                return render(request, 'reserva_error.html', {'error': 'La mesa ya está reservada en ese horario.'})
-
-
-            # Crear la reserva
-            cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
-            mesa = get_object_or_404(Mesa, pk=mesa_id)
+            if conflicto:
+                return _respuesta_reserva(request, success=False, error="La mesa ya está reservada en ese horario.")
 
             Reserva.objects.create(
                 fecha_inicio=fecha_hora_inicio,
@@ -258,49 +244,51 @@ def reservar_mesa(request, mesa_id):
                 cliente=cliente,
                 mesa=mesa
             )
-            # Obtener mensaje personalizado
+
+            # Notificación por email (se mantiene igual)
             mensaje_obj = MensajeNotificacion.objects.last()
             if mensaje_obj:
-                mensaje = mensaje_obj.cuerpo
                 asunto = mensaje_obj.asunto
-                reemplazos = {
+                mensaje = mensaje_obj.cuerpo
+                for k, v in {
                     'nombre': cliente.nombre_apellido,
-                    'mesa': str(mesa.numero),
-                    'capacidad': str(mesa.capacidad),
+                    'mesa': mesa.numero,
+                    'capacidad': mesa.capacidad,
                     'fecha': fecha_str,
                     'hora_inicio': hora_inicio_str,
                     'hora_fin': hora_fin_str
-                }
-                for clave, valor in reemplazos.items():
-                    mensaje = mensaje.replace(f"{{{{ {clave} }}}}", valor)
+                }.items():
+                    mensaje = mensaje.replace(f"{{{{ {k} }}}}", str(v))
             else:
-                # Mensaje por defecto si no hay personalizado
                 asunto = "Confirmación de reserva - FoodFusion"
-                mensaje = f"""
-            Hola {cliente.nombre_apellido},
-            Tu reserva fue realizada con éxito. Aquí están los detalles:
-            - Mesa N°: {mesa.numero}
-            - Capacidad: {mesa.capacidad} personas
-            - Fecha: {fecha_str}
-            - Hora: de {hora_inicio_str} a {hora_fin_str}
-            Gracias por usar FoodFusion.
-                """
-            send_mail(
-            subject=asunto,
-            message=mensaje,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[cliente.correo],
-            fail_silently=True  # Puedes poner True si estás en producción
-)
+                mensaje = f"Hola {cliente.nombre_apellido}, tu reserva fue realizada con éxito.\nMesa: {mesa.numero} - {mesa.capacidad} personas\nDe {hora_inicio_str} a {hora_fin_str}."
 
-            messages.success(request, 'Reserva realizada con éxito.')
-            return redirect('mis_reservas')
+            send_mail(
+                subject=asunto,
+                message=mensaje,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[cliente.correo],
+                fail_silently=True
+            )
+
+            return _respuesta_reserva(request, success=True)
 
         except Exception as e:
-            return render(request, 'reserva_error.html', {'error': f'Error al procesar la reserva: {e}'})
+            return _respuesta_reserva(request, success=False, error=f"Error interno: {e}")
 
     return redirect('mesas_disponibles')
 
+
+def _respuesta_reserva(request, success, error=None):
+    """ Responde con JSON si es AJAX, o redirige si es formulario normal """
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({'success': success, 'error': error})
+    else:
+        if success:
+            messages.success(request, 'Reserva realizada con éxito.')
+        else:
+            messages.error(request, error or 'Ocurrió un error')
+        return redirect('mis_reservas')
 
 
 # ----------------------------
@@ -335,14 +323,18 @@ def mis_reservas(request):
 # Cancelar reserva
 # ----------------------------
 @cliente_required
+@require_POST
 def cancelar_reserva(request, reserva_id):
-    cliente = get_object_or_404(Cliente, id=request.session.get('cliente_id'))
-    reserva = get_object_or_404(Reserva, id=reserva_id, cliente=cliente)
-    if request.method == 'POST':
+    try:
+        reserva = Reserva.objects.get(id=reserva_id)
         reserva.delete()
-        messages.success(request, 'La reserva ha sido cancelada exitosamente.')
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"success": True})
+        return redirect('mis_reservas')  # Fallback si no es AJAX
+    except Reserva.DoesNotExist:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"success": False, "error": "Reserva no encontrada."}, status=404)
         return redirect('mis_reservas')
-    return redirect('mis_reservas')
 
 
 

@@ -13,7 +13,21 @@ body {
     background-size: cover;
     padding-top: 60px; /* Espacio para la navbar fija */
 }
-
+.bloquear-interaccion {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.5;
+  }
+ #overlay-bloqueo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.1);
+      z-index: 9998;
+      display: none;
+  }
 
 .navbar-brand img {
     width: 60px; 
