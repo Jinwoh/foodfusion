@@ -21,7 +21,7 @@
     <!-- Listado de menús -->
 <div class="row justify-content-center" id="contenedor-menus">
     {% for menu in menus %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+    <div class="col-6 col-sm-4 col-md-3 mb-4">
         <div class="text-center h-100 px-2">
             {% if menu.img_url %}
                 <img src="{{ menu.img_url.url }}" class="img-fluid rounded-3" alt="{{ menu.nombre }}">
@@ -29,6 +29,7 @@
                 <img src="{% static 'img/default-food.jpg' %}" class="img-fluid rounded-3" alt="Sin imagen">
             {% endif %}
             <p class="fw-bold mt-2 text-uppercase">{{ menu.nombre }}</p>
+            <p class="text-muted small">{{ menu.descripcion }}</p>
         </div>
     </div>
     {% endfor %}

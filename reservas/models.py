@@ -63,6 +63,7 @@ class CategoriaMenu(models.Model):
 
 class Menu(models.Model):
     nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(null=True, blank=True)
     categoria = models.ForeignKey('CategoriaMenu', on_delete=models.CASCADE)
     precio = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.PositiveIntegerField()

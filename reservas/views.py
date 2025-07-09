@@ -346,10 +346,11 @@ def menus_filtrados_json(request):
         menus = Menu.objects.filter(disponible=True)
 
     data = [
-        {
-            'nombre': menu.nombre,
-            'img_url': menu.img_url.url if menu.img_url else '/static/img/default-food.jpg'
-        }
-        for menu in menus
+    {
+        'nombre': menu.nombre,
+        'descripcion': menu.descripcion,  # 👈 Agregado
+        'img_url': menu.img_url.url if menu.img_url else '/static/img/default-food.jpg'
+    }
+    for menu in menus
     ]
     return JsonResponse({'menus': data})
