@@ -12,29 +12,52 @@
             <button data-categoria="" class="btn btn-outline-dark active">Todos</button>
         {% for categoria in categorias %}
             <button data-categoria="{{ categoria.id }}" class="btn btn-outline-dark">
-        {{ categoria.nombre }}
+                {{ categoria.nombre }}
             </button>
         {% endfor %}
         </div>
     </div>
 
     <!-- Listado de menús -->
-<div class="row justify-content-center" id="contenedor-menus">
-    {% for menu in menus %}
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
-        <div class="text-center h-100 px-2">
-            {% if menu.img_url %}
-                <img src="{{ menu.img_url.url }}" class="img-fluid rounded-3" alt="{{ menu.nombre }}">
-            {% else %}
-                <img src="{% static 'img/default-food.jpg' %}" class="img-fluid rounded-3" alt="Sin imagen">
-            {% endif %}
-            <p class="fw-bold mt-2 text-uppercase">{{ menu.nombre }}</p>
-            <p class="text-muted small">{{ menu.descripcion }}</p>
+    <div class="row justify-content-center" id="contenedor-menus">
+        {% for menu in menus %}
+        <div class="col-6 col-sm-4 col-md-3 mb-4">
+            <div class="text-center h-100 px-2">
+                {% if menu.img_url %}
+                    <img src="{{ menu.img_url.url }}" class="img-fluid rounded-3 menu-img" alt="{{ menu.nombre }}">
+                {% else %}
+                    <img src="{% static 'img/default-food.jpg' %}" class="img-fluid rounded-3 menu-img" alt="Sin imagen">
+                {% endif %}
+                <p class="fw-bold mt-2 text-uppercase">{{ menu.nombre }}</p>
+                <p class="text-muted small">{{ menu.descripcion }}</p>
+            </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 
+<!-- Estilos para imágenes -->
+<style>
+.menu-img {
+    height: 180px;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* Animación fade-in */
+.fade-in {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
 
 <!-- Script de filtrado -->
 <script src="{% static 'js/filtradoMenus.js' %}"></script>

@@ -1,20 +1,22 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
+
 <div class="container mt-4">
     <h2 class="mb-4">Mis Reservas</h2>
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
     {% if reservas %}
-        <table class="table table-bordered">
+        <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
                 <tr>
                     <th>Mesa</th>
                     <th>Fecha</th>
                     <th>Horario</th>
-                    <th>Acciones</th>
+                    <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,11 +25,11 @@
                     <td>Mesa #{{ reserva.mesa.numero }}</td>
                     <td>{{ reserva.fecha_inicio|date:"d/m/Y" }}</td>
                     <td>{{ reserva.fecha_inicio|time:"H:i" }} a {{ reserva.fecha_fin|time:"H:i" }}</td>
-                    <td>
-                        <form method="post" action="{% url 'cancelar_reserva' reserva.id %}">
+                    <td class="text-center">
+                        <form class="form-cancelar-reserva d-inline" method="post" action="{% url 'cancelar_reserva' reserva.id %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas cancelar esta reserva?')">
-                                Cancelar
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-cancelar">
+                                <i class="fas fa-times-circle me-1"></i> Cancelar
                             </button>
                         </form>
                     </td>
@@ -39,4 +41,74 @@
         <div class="alert alert-info">No tienes reservas registradas.</div>
     {% endif %}
 </div>
+
+<!-- Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const cancelarBtns = document.querySelectorAll(".btn-cancelar");
+
+    cancelarBtns.forEach(button => {
+        button.addEventListener("click", function () {
+            const form = button.closest("form");
+
+            Swal.fire({
+                title: '¿Cancelar reserva?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, cancelar',
+                cancelButtonText: 'No'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar loading con SweetAlert
+                    Swal.fire({
+                        title: 'Procesando...',
+                        text: 'Por favor espera',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                            "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+                        },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Reserva cancelada!',
+                                text: 'Tu reserva fue cancelada correctamente.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire("Error", data.error || "Ocurrió un error al cancelar.", "error");
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire("Error", "Error al conectar con el servidor.", "error");
+                        console.error(err);
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+
 {% endblock %}

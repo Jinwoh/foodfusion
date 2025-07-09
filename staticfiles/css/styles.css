@@ -13,25 +13,34 @@ body {
     background-size: cover;
     padding-top: 60px; /* Espacio para la navbar fija */
 }
-
+.bloquear-interaccion {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.5;
+  }
+ #overlay-bloqueo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.1);
+      z-index: 9998;
+      display: none;
+  }
 
 .navbar-brand img {
     width: 60px; 
     height: 50px; 
     
 }
-
-.custom-navbar {
-    background: linear-gradient(to left, #fcd773 80%, #C70039 100%); /* Degradado amarillo a rojo */
-    border-bottom: 1px solid rgba(199, 0, 57, 0.2); /* Línea fina debajo */
-    position: fixed; /* Fija la navbar en la parte superior */
-    width: 100%; /* Ancho completo */
-    top: 0; /* Pegada al borde superior */
-    z-index: 1000; /* Para que esté por encima de otros elementos */
-    padding: 0.3rem 1rem; /* Espaciado interno */
-    box-sizing: border-box; /* Incluye padding en el ancho total */
-    height: 60px; /* Altura fija de la navbar */
+/*.imagen-menu {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    border-radius: 10px;
 }
+*/
 
 /* Pantallas medianas (tablets, < 768px) */
 @media (max-width: 768px) {
@@ -49,3 +58,149 @@ body {
   }
 }
 
+/*
+.custom-navbar {
+    background: linear-gradient(to left, #fcd773 80%, #C70039 100%); 
+    border-bottom: 1px solid rgba(199, 0, 57, 0.2);
+    position: fixed; 
+    width: 100%; 
+    top: 0; 
+    z-index: 1000; 
+    padding: 0.3rem 1rem; 
+    box-sizing: border-box; 
+    height: 60px; 
+}
+
+
+.custom-navbar .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+
+
+
+
+.navbar-nav.me-auto {
+    display: flex;
+    gap: 20px; 
+}
+
+
+.d-flex {
+    gap: 10px; 
+}
+
+.nav-underline {
+    position: relative;
+    font-size: 18px;
+    padding: 10px 16px;
+    color: #000;
+    text-decoration: none;
+    transition: all 0.3s ease; 
+}
+
+.nav-underline::before {
+    content: "";
+    position: absolute;
+    width: 0; 
+    height: 2px;
+    bottom: 5px;
+    left: 50%;
+    background-color: #C70039;
+    transition: all 0.3s ease;
+    transform: translateX(-50%); 
+    opacity: 0.7;
+}
+
+.nav-underline:hover::before {
+    width: 100%;
+}
+
+.click-btn {
+    display: inline-block;
+    font-size: 18px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-style504 {
+    background-color: #C70039; 
+    color: #fff;
+    border: none;
+}
+
+.btn-style504:hover {
+    background-color: #fff;
+    color: #C70039;
+    border: 1px solid #C70039;
+}
+
+.wave-container {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    height: 90vh; 
+    margin: 0;
+    background: #fcd773;
+    position: relative;
+    overflow: hidden; 
+    flex-direction: column;
+}
+
+.wave-text span {
+    display: inline-block;
+    font-size: 6rem; 
+    color: #C70039; 
+    animation: wave 2s ease-in-out infinite; 
+    font-weight: 700;
+}
+
+.wave-text span:nth-child(1) { animation-delay: 0s; }
+.wave-text span:nth-child(2) { animation-delay: 0.1s; }
+.wave-text span:nth-child(3) { animation-delay: 0.2s; }
+.wave-text span:nth-child(4) { animation-delay: 0.3s; }
+.wave-text span:nth-child(5) { animation-delay: 0.4s; }
+.wave-text span:nth-child(6) { animation-delay: 0.5s; }
+.wave-text span:nth-child(7) { animation-delay: 0.6s; }
+.wave-text span:nth-child(8) { animation-delay: 0.7s; }
+.wave-text span:nth-child(9) { animation-delay: 0.8s; }
+.wave-text span:nth-child(10) { animation-delay: 0.9s; }
+
+@keyframes wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); } 
+}
+
+.scroll-down-arrow {
+    position: absolute;
+    bottom: 65px; 
+    left: 50%; 
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    color: #C70039; 
+    animation: bounce 2s infinite; 
+    cursor: pointer;
+}
+
+.scroll-down-arrow:hover {
+    color: #900c3f; 
+}
+
+
+@keyframes bounce {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, 15px); } 
+}
+
+.wave-text {
+    margin-top: -30px; 
+}
+
+
+.scroll-down-arrow {
+    bottom: 85px; 
+}
+*/
