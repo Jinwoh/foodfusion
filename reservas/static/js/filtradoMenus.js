@@ -35,9 +35,11 @@ function filtrarMenus(categoriaId) {
                 const col = document.createElement('div');
                 col.className = 'col-6 col-sm-4 col-md-3 mb-4';
                 col.innerHTML = `
-                <img src="${menu.img_url}" class="img-fluid rounded-3" alt="${menu.nombre}">
-                <p class="fw-bold mt-2 text-uppercase">${menu.nombre}</p>
-                <p class="text-muted small">${menu.descripcion || ""}</p>
+                    <div class="text-center h-100 px-2">
+                        <img src="${menu.img_url}" class="img-fluid rounded-3 menu-img" alt="${menu.nombre}">
+                        <p class="fw-bold mt-2 text-uppercase">${menu.nombre}</p>
+                        <p class="text-muted small">${menu.descripcion || ""}</p>
+                    </div>
                 `;
                 contenedor.appendChild(col);
             });
