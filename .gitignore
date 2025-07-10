@@ -2,4 +2,4 @@ venv
 .env
 __pycache__
 
-restaurante_reservas\settings.py
+settings.py

@@ -22,6 +22,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --------------------------
+    // Flatpickr para fecha (bloquear pasadas)
+    // --------------------------
+    const fechaInput = document.getElementById("fecha");
+
+    if (fechaInput) {
+        flatpickr(fechaInput, {
+            minDate: "today",
+            dateFormat: "Y-m-d",
+            defaultDate: "today"
+        });
+    }
+
+    // --------------------------
     // Flatpickr para horarios
     // --------------------------
     const inicioInput = document.getElementById("hora_inicio");
