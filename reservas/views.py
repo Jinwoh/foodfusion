@@ -218,6 +218,10 @@ def reservar_mesa(request, mesa_id):
             fecha_hora_inicio = timezone.make_aware(naive_inicio)
             fecha_hora_fin = timezone.make_aware(naive_fin)
 
+            # ❗️Validación nueva
+            if fecha_hora_inicio < timezone.now():
+                return _respuesta_reserva(request, success=False, error="No se puede reservar en una fecha u hora pasada.")
+
             if fecha_hora_inicio >= fecha_hora_fin:
                 return _respuesta_reserva(request, success=False, error="Hora de inicio debe ser menor a la de fin.")
 
@@ -277,7 +281,6 @@ def reservar_mesa(request, mesa_id):
             return _respuesta_reserva(request, success=False, error=f"Error interno: {e}")
 
     return redirect('mesas_disponibles')
-
 
 def _respuesta_reserva(request, success, error=None):
     """ Responde con JSON si es AJAX, o redirige si es formulario normal """
